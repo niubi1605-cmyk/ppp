@@ -2,794 +2,1962 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎁 链接盲盒 · 随机抽 + 定向取</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<title>科比云盘 · 加密链接云盘</title>
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+/* 科比云盘 · 紫金暗色主题 */
+:root{
+  --purple:#552583;
+  --purple-l:#7b3fa8;
+  --gold:#FDB927;
+  --gold-d:#e08c00;
+  --bg:#0a0a0f;
+  --card:rgba(255,255,255,.045);
+  --line:rgba(255,255,255,.09);
+  --txt:#f2f2f7;
+  --sub:#9a9aa8;
+  --ok:#31c48d;
+  --err:#ff5c6c;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--txt);-webkit-overflow-scrolling:touch;overscroll-behavior-y:none;
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+  min-height:100vh;overflow-x:hidden;padding-bottom:60px;
+}
+.bg-glow{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  transform:translateZ(0);will-change:transform;
+  background:
+    radial-gradient(60vw 40vh at 15% -5%, rgba(85,37,131,.55), transparent 70%),
+    radial-gradient(50vw 35vh at 95% 8%, rgba(253,185,39,.18), transparent 70%),
+    radial-gradient(70vw 50vh at 50% 110%, rgba(123,63,168,.28), transparent 70%);
+}
+h1,h2,h3{margin:0;font-weight:700;letter-spacing:.3px}
+p{margin:0}
+code{background:rgba(255,255,255,.08);padding:1px 5px;border-radius:5px;font-size:12.5px}
+.hidden{display:none!important}
 
-    body {
-        font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-        min-height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-        background-attachment: fixed;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        padding: 30px 15px;
-        color: #fff;
-    }
+/* 顶栏 */
+.topbar{
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;background:#0d0d14;
+  contain:layout style;
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:11px}
+.brand-logo{
+  width:42px;height:42px;border-radius:13px;display:grid;place-items:center;flex:0 0 auto;
+  font-weight:900;font-size:15px;color:#1b1030;letter-spacing:.5px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-d));
+  box-shadow:0 6px 18px rgba(253,185,39,.28);
+}
+.brand-text h1{font-size:18px;background:linear-gradient(90deg,#fff,var(--gold));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.brand-text p{font-size:11px;color:var(--sub);margin-top:1px}
+.dots{
+  width:38px;height:38px;border-radius:11px;border:1px solid var(--line);
+  background:rgba(255,255,255,.05);display:grid;place-items:center;gap:3px;cursor:pointer;padding:0;
+}
+.dots span{display:block;width:4px;height:4px;border-radius:50%;background:var(--txt);opacity:.85}
+.dots span+span{margin-top:3px}
 
-    .container {
-        width: 100%;
-        max-width: 720px;
-    }
+/* 容器 */
+.view{max-width:620px;margin:0 auto;padding:16px 14px 0}
+.card{
+  background:#14141d;border:1px solid var(--line);border-radius:16px;
+  padding:16px;margin-bottom:14px;
+  contain:layout style;
+}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-head h3{font-size:15px}
+.badge{display:inline-block;min-width:20px;padding:1px 7px;border-radius:9px;font-size:11px;
+  background:rgba(253,185,39,.16);color:var(--gold);margin-left:6px}
 
-    /* ============ 顶部标题 ============ */
-    .header {
-        text-align: center;
-        margin-bottom: 25px;
-    }
-    .header h1 {
-        font-size: 32px;
-        letter-spacing: 2px;
-        text-shadow: 0 4px 20px rgba(0,0,0,.3);
-        margin-bottom: 8px;
-    }
-    .header p {
-        font-size: 14px;
-        opacity: .85;
-    }
+/* 拖拽区 */
+.drop{border:1.5px dashed rgba(253,185,39,.42);text-align:center;padding:30px 16px;
+  background:linear-gradient(180deg,rgba(253,185,39,.05),rgba(85,37,131,.05));transition:.2s}
+.drop.hot{border-color:var(--gold);background:rgba(253,185,39,.12);transform:scale(1.01)}
+.drop-icon{font-size:30px;margin-bottom:8px;filter:drop-shadow(0 3px 8px rgba(253,185,39,.4))}
+.drop h2{font-size:16px;margin-bottom:4px}
+.drop p{font-size:12.5px;color:var(--sub);margin-bottom:14px}
 
-    /* ============ 声明横幅 ============ */
-    .notice {
-        background: rgba(255,255,255,.12);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,.25);
-        border-radius: 12px;
-        padding: 12px 16px;
-        font-size: 12.5px;
-        line-height: 1.7;
-        margin-bottom: 20px;
-        opacity: .92;
-    }
-    .notice b { color: #ffe066; }
+/* 按钮 */
+.btn{border:none;border-radius:12px;padding:11px 18px;font-size:14.5px;font-weight:600;cursor:pointer;
+  font-family:inherit;touch-action:manipulation;user-select:none;
+  transition:transform .12s ease,opacity .12s ease}
+.btn:active{transform:scale(.97)};
+.btn:disabled{opacity:.55;transform:none}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#22160a;
+  box-shadow:0 6px 16px rgba(253,185,39,.25)}
+.btn-purple{background:linear-gradient(135deg,var(--purple-l),var(--purple));color:#fff}
+.btn-ghost{background:rgba(255,255,255,.07);color:var(--txt);border:1px solid var(--line)}
+.btn-block{display:block;width:100%;margin-top:10px}
+.btn-ghost.danger,.menu button.danger{color:var(--err)}
 
-    /* ============ 输入区 ============ */
-    .input-panel {
-        background: rgba(255,255,255,.15);
-        backdrop-filter: blur(14px);
-        border: 1px solid rgba(255,255,255,.3);
-        border-radius: 16px;
-        padding: 18px;
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        box-shadow: 0 8px 32px rgba(0,0,0,.15);
-    }
-    .input-panel input {
-        flex: 1;
-        background: rgba(255,255,255,.95);
-        border: none;
-        border-radius: 10px;
-        padding: 14px 16px;
-        font-size: 16px;
-        color: #333;
-        outline: none;
-        transition: box-shadow .2s;
-    }
-    .input-panel input:focus {
-        box-shadow: 0 0 0 3px rgba(255,224,102,.6);
-    }
-    .input-panel button {
-        background: linear-gradient(135deg, #f6d365, #fda085);
-        border: none;
-        border-radius: 10px;
-        padding: 0 26px;
-        font-size: 16px;
-        font-weight: bold;
-        color: #5a2a00;
-        cursor: pointer;
-        transition: transform .15s, box-shadow .2s;
-        box-shadow: 0 4px 14px rgba(253,160,133,.5);
-        white-space: nowrap;
-    }
-    .input-panel button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(253,160,133,.7);
-    }
-    .input-panel button:active { transform: translateY(0); }
+/* 队列 */
+.queue,.lib{list-style:none;margin:0;padding:0}
+.queue li,.lib li{content-visibility:auto;contain-intrinsic-size:auto 62px}
+.queue li,.lib li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.queue li:last-child,.lib li:last-child{border-bottom:none}
+.qicon,.licon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;
+  background:rgba(255,255,255,.07);flex:0 0 auto}
+.qinfo,.linfo{flex:1;min-width:0}
+.qname,.lname{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qsub,.lsub{font-size:11.5px;color:var(--sub);margin-top:2px}
+.lsub .warn{color:var(--gold)}
+.lsub .dead{color:var(--err)}
+.mini{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--txt);
+  border-radius:9px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+.mini.del{color:var(--err)}
+.lacts{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
 
-    /* ============ 玩法提示 ============ */
-    .tips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 22px;
-        font-size: 12.5px;
-    }
-    .tips span {
-        background: rgba(255,255,255,.15);
-        border: 1px solid rgba(255,255,255,.25);
-        padding: 6px 12px;
-        border-radius: 20px;
-    }
+/* 表单 */
+.field{margin-bottom:16px}
+.field>label,.field .switch-label{display:block;font-size:13px;font-weight:600;margin-bottom:8px}
+.field em{font-style:normal;color:var(--sub);font-weight:400;font-size:11.5px}
+input[type=password],input[type=text],input[type=datetime-local]{
+  width:100%;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--txt);
+  border-radius:11px;padding:11px 12px;font-size:14px;font-family:inherit;outline:none}
+input:focus{border-color:rgba(253,185,39,.6);background:rgba(253,185,39,.06)}
+.pwd-wrap{position:relative}
+.pwd-wrap input{padding-right:62px}
+.eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;
+  color:var(--gold);font-size:12.5px;cursor:pointer;font-family:inherit}
+.hint{font-size:11.5px;color:var(--sub);margin-top:7px;line-height:1.5}
+.err{color:var(--err);font-size:13px;margin-top:10px;text-align:center}
+.center{text-align:center}
 
-    /* ============ 结果卡片 ============ */
-    .result {
-        background: rgba(255,255,255,.97);
-        color: #333;
-        border-radius: 20px;
-        padding: 28px 26px;
-        box-shadow: 0 20px 60px rgba(0,0,0,.3);
-        display: none;
-        animation: popIn .45s cubic-bezier(.34,1.56,.64,1);
-        position: relative;
-        overflow: hidden;
-    }
-    .result.show { display: block; }
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--txt);
+  border-radius:20px;padding:7px 13px;font-size:12.5px;cursor:pointer;font-family:inherit}
+.chip.active{background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#22160a;border-color:transparent;font-weight:700}
+.row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.row input[type=datetime-local]{flex:1;min-width:170px}
 
-    @keyframes popIn {
-        0%   { transform: scale(.7); opacity: 0; }
-        100% { transform: scale(1);  opacity: 1; }
-    }
+/* 开关 */
+/* 开关：关闭=红、开启=金，配文字状态，一眼可辨 */
+.sw-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:13px;padding:12px 13px}
+.sw-row.on{border-color:rgba(253,185,39,.5);background:rgba(253,185,39,.09)}
+.sw-row.off{border-color:rgba(255,92,108,.45);background:rgba(255,92,108,.09)}
+.sw-text{min-width:0;flex:1}
+.sw-title{font-size:13.5px;font-weight:700}
+.sw-state{font-size:11.5px;margin-top:3px;display:flex;align-items:center;gap:5px}
+.sw-row.on .sw-state{color:var(--gold)}
+.sw-row.off .sw-state{color:var(--err)}
+.sw-dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
+.sw-row.on .sw-dot{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.sw-row.off .sw-dot{background:var(--err);box-shadow:0 0 6px var(--err)}
 
-    .result::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 6px;
-        background: linear-gradient(90deg, #f6d365, #fda085, #f093fb, #667eea);
-    }
+.switch{position:relative;display:flex;align-items:center;cursor:pointer;user-select:none;flex:0 0 auto}
+.switch input{position:absolute;opacity:0;pointer-events:none}
+.switch .track{width:46px;height:26px;border-radius:14px;position:relative;transition:background .2s;
+  flex:0 0 auto;background:var(--err);box-shadow:0 0 0 1px rgba(255,92,108,.6) inset}
+.switch .track i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
+  display:grid;place-items:center;font-style:normal;font-size:9px;font-weight:800;color:#7a5a12;
+  background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.switch input:checked+.track{background-color:var(--gold);
+  background-image:linear-gradient(135deg,var(--gold),var(--gold-d));
+  box-shadow:0 0 0 1px rgba(253,185,39,.6) inset}
+.switch input:checked+.track i{left:23px}
+.track .on-txt,.track .off-txt{display:none;line-height:1}
+.switch input:checked+.track .on-txt{display:block}
+.switch input:not(:checked)+.track .off-txt{display:block}
+.switch input:not(:checked)+.track i{color:#8a3a44}
 
-    .result-header {
-        font-size: 13px;
-        color: #888;
-        margin-bottom: 14px;
-        letter-spacing: 1px;
-    }
+/* 水印设置 */
+.wm-opts{margin-top:12px;padding:12px;border-radius:12px;border:1px dashed rgba(253,185,39,.35);
+  background:rgba(253,185,39,.05)}
+.wm-title{font-size:12.5px;font-weight:700;margin-bottom:10px}
+.wm-title em{font-style:normal;color:var(--sub);font-weight:400;font-size:11.5px}
+.wm-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.wm-lab{font-size:12px;color:var(--sub);flex:0 0 34px}
+.pos-chips .chip{padding:6px 11px;font-size:12px}
+.color-chips{display:flex;gap:8px;flex-wrap:wrap}
+.cchip{width:26px;height:26px;border-radius:50%;border:2px solid transparent;background:var(--c);
+  cursor:pointer;padding:0;position:relative;transition:transform .12s ease}
+.cchip:active{transform:scale(.9)}
+.cchip.active{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+.cchip[data-color="#000000"]{border-color:rgba(255,255,255,.35)}
+.cchip[data-color="#000000"].active{border-color:#fff}
+.wm-row input[type=text]{flex:1;min-width:150px}
+.wm-preview{margin-top:4px}
+.wm-preview-box{position:relative;height:96px;border-radius:10px;overflow:hidden;
+  background:linear-gradient(135deg,#1b2a4a,#0f0f18);border:1px solid var(--line)}
+.wm-pv{position:absolute;font-size:12px;font-weight:700;letter-spacing:.5px;
+  text-shadow:0 1px 3px rgba(0,0,0,.85);padding:8px 10px;white-space:nowrap}
+.switch:active .track{filter:brightness(1.12)}
+.switch-label{margin:0!important;font-size:13.5px!important;font-weight:600!important}
 
-    .reward-name {
-        font-size: 24px;
-        font-weight: 800;
-        color: #5a2a8a;
-        margin-bottom: 12px;
-        word-break: break-all;
-        line-height: 1.3;
-    }
-    .reward-desc {
-        font-size: 15px;
-        color: #555;
-        line-height: 1.7;
-        margin-bottom: 18px;
-        padding: 12px 16px;
-        background: #f7f5ff;
-        border-left: 4px solid #a78bfa;
-        border-radius: 6px;
-        word-break: break-all;
-    }
-    .reward-link-label {
-        font-size: 12px;
-        color: #999;
-        margin-bottom: 8px;
-        letter-spacing: 1px;
-    }
-    .reward-link-box {
-        display: flex;
-        gap: 8px;
-        align-items: stretch;
-    }
-    .reward-link {
-        flex: 1;
-        background: #f0f4ff;
-        border: 1px dashed #a5b4fc;
-        border-radius: 10px;
-        padding: 12px 14px;
-        font-family: "Consolas", monospace;
-        font-size: 13px;
-        color: #4338ca;
-        word-break: break-all;
-        user-select: all;
-        line-height: 1.5;
-    }
-    .btn-copy, .btn-open {
-        border: none;
-        border-radius: 10px;
-        padding: 0 16px;
-        font-size: 13.5px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: opacity .2s, transform .15s;
-        white-space: nowrap;
-    }
-    .btn-copy {
-        background: #e0e7ff;
-        color: #4338ca;
-    }
-    .btn-open {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: #fff;
-    }
-    .btn-copy:hover, .btn-open:hover { opacity: .85; transform: translateY(-1px); }
+/* 进度条 */
+.bar{height:8px;border-radius:6px;background:rgba(255,255,255,.09);overflow:hidden}
+.bar-in{height:100%;width:100%;border-radius:6px;transform:scaleX(0);transform-origin:left center;
+  transition:transform .18s linear;will-change:transform;
+  background:linear-gradient(90deg,var(--purple-l),var(--gold))}
 
-    /* ============ 搜索结果列表 ============ */
-    .match-list {
-        background: rgba(255,255,255,.97);
-        color: #333;
-        border-radius: 16px;
-        padding: 20px;
-        margin-top: 16px;
-        box-shadow: 0 12px 40px rgba(0,0,0,.25);
-        display: none;
-    }
-    .match-list.show { display: block; }
-    .match-list h3 {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 14px;
-        letter-spacing: .5px;
-    }
-    .match-item {
-        padding: 12px 16px;
-        border-radius: 10px;
-        background: #f8f8fc;
-        margin-bottom: 8px;
-        cursor: pointer;
-        transition: background .2s, transform .15s;
-        border-left: 3px solid transparent;
-    }
-    .match-item:hover {
-        background: #eef2ff;
-        border-left-color: #6366f1;
-        transform: translateX(3px);
-    }
-    .match-item .m-name {
-        font-weight: 700;
-        color: #4338ca;
-        font-size: 15px;
-        margin-bottom: 3px;
-    }
-    .match-item .m-desc {
-        font-size: 12.5px;
-        color: #777;
-    }
-    .match-item .m-idx {
-        display: inline-block;
-        background: #e0e7ff;
-        color: #4338ca;
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 10px;
-        margin-right: 8px;
-        font-family: monospace;
-    }
+/* 分享页 */
+.gate{text-align:center;padding:28px 18px}
+.gate .lock{font-size:38px;margin-bottom:10px}
+.gate h2{font-size:17px;margin-bottom:6px}
+.gate input{margin:14px 0 4px}
+.share-head{display:flex;gap:12px;align-items:center}
+.ficon{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;font-size:23px;
+  background:rgba(255,255,255,.07);flex:0 0 auto}
+.fmeta{min-width:0;flex:1}
+.fmeta h2{font-size:15.5px;word-break:break-all}
+.expire{margin-top:12px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:10px}
+.expire b{color:var(--gold)}
+.player-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000}
+.player-wrap.empty{display:none!important}
+.player-wrap img,.player-wrap video{width:100%;display:block;max-height:64vh;object-fit:contain;
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.guard{position:absolute;inset:0;z-index:5;display:none}
+.watermark{position:absolute;z-index:4;pointer-events:none}
+.watermark{position:absolute;z-index:4;pointer-events:none;font-size:12.5px;font-weight:700;
+  letter-spacing:.5px;text-shadow:0 1px 4px rgba(0,0,0,.9);white-space:nowrap;
+  background:rgba(0,0,0,.28);padding:3px 9px;border-radius:6px}
+.wm-tl{top:10px;left:10px}
+.wm-tr{top:10px;right:10px}
+.wm-bl{bottom:54px;left:10px}
+.wm-br{bottom:54px;right:10px}
+.wm-c{top:50%;left:0;right:0;text-align:center;background:none}
+.wm-c span{background:rgba(0,0,0,.28);padding:3px 9px;border-radius:6px}
+.wm-pv.wm-tl{top:10px;left:10px}.wm-pv.wm-tr{top:10px;right:10px}
+.wm-pv.wm-bl{bottom:10px;left:10px}.wm-pv.wm-br{bottom:10px;right:10px}
+.wm-pv.wm-c{top:50%;left:0;right:0;text-align:center;transform:translateY(-50%);background:none}
 
-    /* ============ 历史记录 ============ */
-    .history {
-        margin-top: 22px;
-        background: rgba(0,0,0,.18);
-        backdrop-filter: blur(10px);
-        border-radius: 14px;
-        padding: 16px;
-        font-size: 13px;
-        max-height: 220px;
-        overflow-y: auto;
-        display: none;
-    }
-    .history.show { display: block; }
-    .history h3 {
-        font-size: 13px;
-        opacity: .8;
-        margin-bottom: 10px;
-        letter-spacing: 1px;
-    }
-    .history-item {
-        padding: 8px 10px;
-        border-bottom: 1px solid rgba(255,255,255,.1);
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        opacity: .9;
-    }
-    .history-item:last-child { border-bottom: none; }
-    .history-item .h-idx {
-        font-family: monospace;
-        opacity: .6;
-        font-size: 11.5px;
-    }
+.no-preview{text-align:center;padding:26px 10px;color:var(--sub);font-size:13px}
+.big-icon{font-size:40px;margin-bottom:8px}
+.actions{margin-top:0}
 
-    /* ============ 错误提示 ============ */
-    .error {
-        background: rgba(255, 82, 82, .25);
-        border: 1px solid rgba(255, 82, 82, .5);
-        color: #fff;
-        padding: 12px 16px;
-        border-radius: 10px;
-        margin-top: 14px;
-        font-size: 13.5px;
-        display: none;
-        animation: shake .4s;
-    }
-    .error.show { display: block; }
-    @keyframes shake {
-        0%,100% { transform: translateX(0); }
-        25% { transform: translateX(-6px); }
-        75% { transform: translateX(6px); }
-    }
+/* 遮罩/菜单/弹窗 */
+.mask{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.62);
+  display:flex;align-items:flex-end;justify-content:center}
+.menu{width:min(420px,94vw);background:#14141c;border:1px solid var(--line);border-radius:18px 18px 0 0;
+  padding:10px 12px calc(16px + env(safe-area-inset-bottom));animation:up .22s cubic-bezier(.2,.9,.3,1)}
+@keyframes up{from{transform:translate3d(0,40px,0);opacity:0}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.menu button{display:block;width:100%;text-align:left;border:none;background:none;color:var(--txt);
+  padding:14px 12px;font-size:15px;border-radius:11px;cursor:pointer;font-family:inherit}
+.menu button:active{background:rgba(255,255,255,.07)}
+.modal{width:min(520px,94vw);max-height:80vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#14141c;border:1px solid var(--line);
+  border-radius:18px;padding:0;margin-bottom:8vh;-webkit-overflow-scrolling:touch}
+.modal-head{position:sticky;top:0;background:#14141c;display:flex;align-items:center;justify-content:space-between;
+  padding:15px 16px;border-bottom:1px solid var(--line)}
+.modal-head h3{font-size:16px}
+.close{background:none;border:none;color:var(--sub);font-size:17px;cursor:pointer}
+.modal-body{padding:6px 16px 18px}
+.faq{border-bottom:1px solid rgba(255,255,255,.06)}
+.faq:last-child{border-bottom:none}
+.faq-q{width:100%;display:flex;justify-content:space-between;gap:10px;align-items:center;background:none;
+  border:none;color:var(--txt);font-size:14px;font-weight:600;padding:14px 0;cursor:pointer;text-align:left;font-family:inherit}
+.faq-q i{color:var(--gold);font-style:normal;transition:.2s;flex:0 0 auto}
+.faq.open .faq-q i{transform:rotate(45deg)}
+.faq-a{display:none;font-size:13px;color:#c9c9d4;line-height:1.7;padding:0 0 14px}
+.faq.open .faq-a{display:block}
+.faq-a b{color:var(--gold)}
+.spec{list-style:none;margin:0;padding:0}
+.spec li{padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13.5px}
+.spec li:last-child{border-bottom:none}
+.spec li span{display:block;color:var(--sub);font-size:11.5px;margin-top:3px}
 
-    /* ============ 开盲盒动画 ============ */
-    .loading {
-        text-align: center;
-        padding: 40px;
-        font-size: 18px;
-        letter-spacing: 2px;
-        display: none;
-    }
-    .loading.show { display: block; }
-    .loading .box {
-        font-size: 60px;
-        display: inline-block;
-        animation: shakeBox .5s infinite;
-    }
-    @keyframes shakeBox {
-        0%,100% { transform: rotate(-8deg) scale(1); }
-        50%     { transform: rotate(8deg) scale(1.12); }
-    }
-    .loading p { margin-top: 10px; opacity: .9; }
+/* 更新日志 */
+.ver{float:right;font-size:11px;color:var(--gold);background:rgba(253,185,39,.14);
+  padding:2px 7px;border-radius:8px;font-weight:700}
+.ver-line{margin-top:6px;color:var(--sub)}
+.link-btn{background:none;border:none;color:var(--gold);font-size:11.5px;cursor:pointer;
+  padding:0;font-family:inherit;text-decoration:underline}
+.log{border-left:2px solid rgba(253,185,39,.45);padding:0 0 0 14px;margin:4px 0 18px}
+.log:last-child{margin-bottom:4px}
+.log-h{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.log-v{font-size:14.5px;font-weight:800;color:var(--gold)}
+.log-d{font-size:11.5px;color:var(--sub)}
+.log-new{font-size:10.5px;background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#22160a;
+  padding:1px 6px;border-radius:7px;font-weight:800}
+.log ul{margin:0;padding-left:16px}
+.log li{font-size:13px;line-height:1.75;color:#c9c9d4}
+.log li b{color:var(--txt)}
 
-    /* ============ 统计栏 ============ */
-    .stats {
-        text-align: center;
-        font-size: 12.5px;
-        opacity: .75;
-        margin-top: 16px;
-        letter-spacing: 1px;
-    }
+/* toast */
+.toast{position:fixed;left:50%;bottom:26px;z-index:99;opacity:0;
+  transform:translate3d(-50%,12px,0);transition:opacity .18s ease,transform .18s ease;
+  background:rgba(20,20,28,.96);border:1px solid var(--line);color:var(--txt);
+  padding:11px 18px;border-radius:12px;font-size:13.5px;max-width:88vw;text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);pointer-events:none}
+.toast.show{opacity:1;transform:translate3d(-50%,0,0)}
 
-    /* 移动端 */
-    @media (max-width: 520px) {
-        .header h1 { font-size: 24px; }
-        .input-panel { flex-direction: column; }
-        .input-panel button { padding: 14px; }
-        .reward-link-box { flex-direction: column; }
-        .btn-copy, .btn-open { padding: 10px; }
-    }
+.foot{text-align:center;padding:6px 10px 30px;color:var(--sub);font-size:11.5px;line-height:1.8}
+.mamba{color:rgba(253,185,39,.55);font-style:italic;margin-top:6px}
+
+@media (min-width:640px){
+  .mask{align-items:center}
+  .menu{border-radius:18px;margin-bottom:0;padding-bottom:16px}
+}
+
 </style>
 </head>
 <body>
-<div class="container">
 
-    <div class="header">
-        <h1>🎁 链接盲盒</h1>
-        <p>随机抽 · 定向取 · 关键字找</p>
+<div class="bg-glow"></div>
+
+<!-- ============ 顶部栏 ============ -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo">KB</div>
+    <div class="brand-text">
+      <h1>科比云盘</h1>
+      <p>Mamba Mentality · 链接即文件</p>
+    </div>
+  </div>
+  <button class="dots" id="menuBtn" aria-label="更多">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- ============ 首页：上传 ============ -->
+<main id="viewHome" class="view">
+  <section class="card drop" id="dropZone">
+    <input type="file" id="fileInput" multiple hidden>
+    <div class="drop-inner">
+      <div class="drop-icon">⬆</div>
+      <h2>选择或拖拽文件到这里</h2>
+      <p>照片 / 视频 / 文档 / 任意格式，全程本地加密</p>
+      <button class="btn btn-primary" id="pickBtn">选择文件</button>
+    </div>
+  </section>
+
+  <!-- 待上传文件 -->
+  <section class="card" id="queueCard" hidden>
+    <div class="card-head">
+      <h3>待加密文件</h3>
+      <button class="btn-ghost" id="clearQueueBtn">清空</button>
+    </div>
+    <ul class="queue" id="queueList"></ul>
+  </section>
+
+  <!-- 安全设置 -->
+  <section class="card" id="settingCard" hidden>
+    <div class="card-head"><h3>安全设置</h3></div>
+
+    <div class="field">
+      <label for="pwdInput">访问密码 <em>（可选，留空则仅凭链接访问）</em></label>
+      <div class="pwd-wrap">
+        <input type="password" id="pwdInput" placeholder="设置密码后，打开链接需输入" autocomplete="new-password">
+        <button class="eye" id="eyeBtn" type="button">显示</button>
+      </div>
+      <p class="hint">密码通过 PBKDF2-SHA-512 派生密钥，不保存明文，忘记无法找回。</p>
     </div>
 
-    <div class="notice">
-        <b>📢 本地运行声明：</b>本页面是纯 HTML 文件，<b>不联网、不上传、不收集任何数据</b>。
-        所有奖励内容都保存在你自己的电脑里，只有你自己能看到。
-        点击「打开链接」才会跳转到对应网址。
+    <div class="field">
+      <label>链接有效期</label>
+      <div class="chips" id="expireChips">
+        <button class="chip" data-min="60">1 小时</button>
+        <button class="chip" data-min="360">6 小时</button>
+        <button class="chip" data-min="1440">24 小时</button>
+        <button class="chip active" data-min="10080">7 天</button>
+        <button class="chip" data-min="43200">30 天</button>
+        <button class="chip" data-min="525600">365 天</button>
+      </div>
+      <div class="row">
+        <input type="datetime-local" id="expireCustom" aria-label="自定义到期时间">
+        <span class="hint" id="expirePreview"></span>
+      </div>
+      <p class="hint">最长 365 天，到期后密文与密钥自动销毁，链接立即失效。</p>
     </div>
 
-    <div class="input-panel">
-        <input type="text" id="userInput"
-               placeholder="回车随机抽 · 输入数字定向取 · 输入关键字模糊找"
-               autocomplete="off">
-        <button id="actionBtn">抽盲盒 🎲</button>
-    </div>
-
-    <div class="tips">
-        <span>🎲 直接回车 → 随机抽</span>
-        <span>🎯 输入 42 → 定向取第 42 号</span>
-        <span>🔍 输入 肯德基 → 模糊查找</span>
-    </div>
-
-    <!-- 开盲盒动画 -->
-    <div class="loading" id="loading">
-        <div class="box">📦</div>
-        <p>正在打开盲盒...</p>
-    </div>
-
-    <!-- 结果卡片 -->
-    <div class="result" id="result">
-        <div class="result-header" id="resultHeader">🎉 恭喜获得奖励</div>
-        <div class="reward-name" id="rewardName"></div>
-        <div class="reward-desc" id="rewardDesc"></div>
-        <div class="reward-link-label">🔗 奖励链接</div>
-        <div class="reward-link-box">
-            <div class="reward-link" id="rewardLink"></div>
-            <button class="btn-copy" id="copyBtn">复制</button>
-            <button class="btn-open" id="openBtn">打开</button>
+    <div class="field" id="dlField">
+      <div class="sw-row">
+        <div class="sw-text">
+          <div class="sw-title">允许下载文件</div>
+          <div class="sw-state" id="dlState"></div>
         </div>
+        <label class="switch">
+          <input type="checkbox" id="allowDownload" checked>
+          <span class="track"><i><b class="on-txt">开</b><b class="off-txt">关</b></i></span>
+        </label>
+      </div>
+      <p class="hint" id="dlHint"></p>
+
+      <div class="wm-opts" id="wmOpts" hidden>
+        <div class="wm-title">水印设置 <em>关闭下载后生效，可自定义显示在你视频上的水印</em></div>
+
+        <div class="wm-row">
+          <span class="wm-lab">位置</span>
+          <div class="chips pos-chips" id="posChips">
+            <button class="chip" data-pos="tl">左上</button>
+            <button class="chip" data-pos="tr">右上</button>
+            <button class="chip" data-pos="c">居中</button>
+            <button class="chip" data-pos="bl">左下</button>
+            <button class="chip active" data-pos="br">右下</button>
+          </div>
+        </div>
+
+        <div class="wm-row">
+          <span class="wm-lab">颜色</span>
+          <div class="color-chips" id="colorChips">
+            <button class="cchip active" data-color="#FDB927" style="--c:#FDB927" aria-label="金色"></button>
+            <button class="cchip" data-color="#ffffff" style="--c:#ffffff" aria-label="白色"></button>
+            <button class="cchip" data-color="#ff4d4f" style="--c:#ff4d4f" aria-label="红色"></button>
+            <button class="cchip" data-color="#22d3ee" style="--c:#22d3ee" aria-label="青色"></button>
+            <button class="cchip" data-color="#31c48d" style="--c:#31c48d" aria-label="绿色"></button>
+            <button class="cchip" data-color="#b57bff" style="--c:#b57bff" aria-label="紫色"></button>
+            <button class="cchip" data-color="#000000" style="--c:#000000" aria-label="黑色"></button>
+          </div>
+        </div>
+
+        <div class="wm-row">
+          <span class="wm-lab">文字</span>
+          <input type="text" id="wmText" maxlength="40" placeholder="科比云盘 · 禁止下载">
+        </div>
+
+        <div class="wm-preview">
+          <div class="wm-preview-box"><span class="wm-pv" id="wmPreview">科比云盘 · 禁止下载</span></div>
+        </div>
+      </div>
     </div>
 
-    <!-- 搜索结果列表 -->
-    <div class="match-list" id="matchList"></div>
+    <button class="btn btn-primary btn-block" id="startBtn">加密并生成链接</button>
+  </section>
 
-    <!-- 错误提示 -->
-    <div class="error" id="errorBox"></div>
+  <!-- 进度 -->
+  <section class="card" id="progressCard" hidden>
+    <div class="card-head"><h3>正在加密…</h3></div>
+    <div class="bar"><div class="bar-in" id="progressBar"></div></div>
+    <p class="hint" id="progressText">准备中</p>
+  </section>
 
-    <!-- 历史记录 -->
-    <div class="history" id="history">
-        <h3>📜 本次抽取记录</h3>
-        <div id="historyList"></div>
+  <!-- 我的文件 -->
+  <section class="card" id="libCard" hidden>
+    <div class="card-head">
+      <h3>我的文件 <span class="badge" id="libCount">0</span></h3>
+      <button class="btn-ghost" id="cleanBtn">清理过期</button>
     </div>
+    <ul class="lib" id="libList"></ul>
+  </section>
 
-    <div class="stats" id="stats"></div>
+  <section class="card" id="importCard">
+    <div class="card-head"><h3>导入分享包</h3></div>
+    <p class="hint">换设备 / 换浏览器打开文件时，让对方把 <code>.kobepack</code> 分享包发给你，在这里导入后即可用原链接观看。</p>
+    <input type="file" id="packInput" accept=".kobepack" hidden>
+    <button class="btn btn-ghost btn-block" id="importBtn">导入 .kobepack 分享包</button>
+  </section>
+
+  <footer class="foot">
+    <p>🔒 所有加密在浏览器本地完成 · 密钥只存在于链接 # 片段中 · 不上传任何服务器</p>
+    <p class="ver-line">科比云盘 <span id="footVer"></span> · <button class="link-btn" id="footLogBtn">更新日志</button></p>
+    <p class="mamba">"Heroes come and go, but legends are forever."</p>
+  </footer>
+</main>
+
+<!-- ============ 分享页 ============ -->
+<main id="viewShare" class="view" hidden>
+  <div id="gateBox" class="card gate" hidden>
+    <div class="lock">🔐</div>
+    <h2>该文件已加密</h2>
+    <p class="hint" id="gateTip">请输入分享者设置的密码</p>
+    <input type="password" id="gatePwd" placeholder="访问密码" autocomplete="current-password">
+    <button class="btn btn-primary btn-block" id="gateBtn">解密并打开</button>
+    <p class="err" id="gateErr" hidden></p>
+  </div>
+
+  <div id="shareBox" hidden>
+    <section class="card">
+      <div class="share-head">
+        <div class="ficon" id="shareIcon">📄</div>
+        <div class="fmeta">
+          <h2 id="shareName">文件</h2>
+          <p id="shareInfo" class="hint"></p>
+        </div>
+      </div>
+      <div class="expire" id="shareExpire"></div>
+    </section>
+
+    <section class="card" id="mediaCard">
+      <div class="player-wrap" id="playerWrap">
+        <img id="imgView" hidden alt="">
+        <video id="videoView" hidden playsinline controls
+               controlslist="nodownload noremoteplayback" disablepictureinpicture></video>
+        <div class="guard" id="guard" hidden></div>
+        <div class="watermark" id="watermark" hidden>科比云盘 · 禁止下载</div>
+      </div>
+      <div class="no-preview" id="noPreview" hidden>
+        <div class="big-icon" id="npIcon">📦</div>
+        <p>该格式不支持在线预览，可直接下载后打开。</p>
+      </div>
+    </section>
+
+    <section class="card actions" id="actionCard">
+      <button class="btn btn-primary btn-block" id="dlBtn">下载文件</button>
+      <button class="btn btn-ghost btn-block" id="packBtn">导出 .kobepack 分享包</button>
+      <button class="btn btn-ghost btn-block" id="backBtn">返回上传页</button>
+    </section>
+    <p class="hint center" id="dlTip" hidden>该视频已关闭下载权限，仅可在线观看。</p>
+  </div>
+
+  <div id="deadBox" class="card gate" hidden>
+    <div class="lock">⌛</div>
+    <h2 id="deadTitle">链接已失效</h2>
+    <p class="hint" id="deadTip"></p>
+    <button class="btn btn-ghost btn-block" id="deadBackBtn">返回上传页</button>
+  </div>
+</main>
+
+<!-- ============ 三点菜单 ============ -->
+<div class="mask" id="menuMask" hidden>
+  <div class="menu" id="menuPanel">
+    <button data-act="changelog">更新日志 <span class="ver" id="menuVer"></span></button>
+    <button data-act="about">关于网站</button>
+    <button data-act="crypto">加密技术说明</button>
+    <button data-act="faq">常见问题</button>
+    <button data-act="wipe" class="danger">清空本地所有数据</button>
+  </div>
 </div>
 
+<!-- ============ 弹窗 ============ -->
+<div class="mask" id="modalMask" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">关于网站</h3>
+      <button class="close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
 <script>
-/* ================================================================
-   奖励池：100 条模板，请把 name / desc / link 换成你自己的内容
-   格式：{ name: "名字", desc: "介绍", link: "链接" }
-   ================================================================ */
-const REWARDS = [
-    { name: "高颜值萝莉 Sherry_niko 猫耳洛丽塔直播大秀 摆逼揉胸骚撸点满满", desc: "高颜值萝莉Sherry_niko身穿洛丽塔，雪白丝袜包裹纤细长腿，头顶粉嫩猫耳，她拿起啤酒喝一口，晶莹口水顺着红唇滑落，接着她抓起粗长假鸡巴，小嘴缓缓张开，深深塞入喉咙，舌头灵活缠绕顶端，喉部收缩吞吐，口水拉出长丝滴落。放下假鸡巴后，她双手拉扯裙摆慢慢褪下，露出完全真空的完美酮体，纤腰翘臀与粉嫩乳尖一览无余，她摆出诱人M字腿，手伸到腿间用力掰开湿润白虎蜜穴，粉红嫩穴完整出现在镜头前，穴口一张一缩诱人至极！", link: "https://m338.xn--d9u11dw2l41at78afwi.xn--fiqs8s/api/v2/home/public/video/long/hls/m3u8/41db981cb0165f2ff89db3950879744a/1791621000/UWfHL4pHtg63h_JyiM3qQHCys3Ap3c4pzqsy0acxSZqWvnxDYMs_play?cdnId=2&variant=master" },
-    { name: "奖励 002", desc: "这是第 2 个奖励的简短介绍", link: "https://example.com/reward/002" },
-    { name: "奖励 003", desc: "这是第 3 个奖励的简短介绍", link: "https://example.com/reward/003" },
-    { name: "奖励 004", desc: "这是第 4 个奖励的简短介绍", link: "https://example.com/reward/004" },
-    { name: "奖励 005", desc: "这是第 5 个奖励的简短介绍", link: "https://example.com/reward/005" },
-    { name: "奖励 006", desc: "这是第 6 个奖励的简短介绍", link: "https://example.com/reward/006" },
-    { name: "奖励 007", desc: "这是第 7 个奖励的简短介绍", link: "https://example.com/reward/007" },
-    { name: "奖励 008", desc: "这是第 8 个奖励的简短介绍", link: "https://example.com/reward/008" },
-    { name: "奖励 009", desc: "这是第 9 个奖励的简短介绍", link: "https://example.com/reward/009" },
-    { name: "奖励 010", desc: "这是第 10 个奖励的简短介绍", link: "https://example.com/reward/010" },
+/* ============================================================
+ *  科比云盘 · 加密核心 (Web Crypto API)
+ *  AES-256-GCM 内容加密 + PBKDF2-HMAC-SHA512 口令派生
+ * ============================================================ */
+window.KCrypto = (function () {
+  'use strict';
 
-    { name: "奖励 011", desc: "这是第 11 个奖励的简短介绍", link: "https://example.com/reward/011" },
-    { name: "奖励 012", desc: "这是第 12 个奖励的简短介绍", link: "https://example.com/reward/012" },
-    { name: "奖励 013", desc: "这是第 13 个奖励的简短介绍", link: "https://example.com/reward/013" },
-    { name: "奖励 014", desc: "这是第 14 个奖励的简短介绍", link: "https://example.com/reward/014" },
-    { name: "奖励 015", desc: "这是第 15 个奖励的简短介绍", link: "https://example.com/reward/015" },
-    { name: "奖励 016", desc: "这是第 16 个奖励的简短介绍", link: "https://example.com/reward/016" },
-    { name: "奖励 017", desc: "这是第 17 个奖励的简短介绍", link: "https://example.com/reward/017" },
-    { name: "奖励 018", desc: "这是第 18 个奖励的简短介绍", link: "https://example.com/reward/018" },
-    { name: "奖励 019", desc: "这是第 19 个奖励的简短介绍", link: "https://example.com/reward/019" },
-    { name: "奖励 020", desc: "这是第 20 个奖励的简短介绍", link: "https://example.com/reward/020" },
+  var CHUNK = 4 * 1024 * 1024;      // 分块大小 4MB
+  var MAGIC = 'KBCLD02';            // 密文容器魔数
+  var PBKDF2_ITER = 250000;         // 口令派生迭代次数
+  var enc = new TextEncoder();
+  var dec = new TextDecoder();
 
-    { name: "奖励 021", desc: "这是第 21 个奖励的简短介绍", link: "https://example.com/reward/021" },
-    { name: "奖励 022", desc: "这是第 22 个奖励的简短介绍", link: "https://example.com/reward/022" },
-    { name: "奖励 023", desc: "这是第 23 个奖励的简短介绍", link: "https://example.com/reward/023" },
-    { name: "奖励 024", desc: "这是第 24 个奖励的简短介绍", link: "https://example.com/reward/024" },
-    { name: "奖励 025", desc: "这是第 25 个奖励的简短介绍", link: "https://example.com/reward/025" },
-    { name: "奖励 026", desc: "这是第 26 个奖励的简短介绍", link: "https://example.com/reward/026" },
-    { name: "奖励 027", desc: "这是第 27 个奖励的简短介绍", link: "https://example.com/reward/027" },
-    { name: "奖励 028", desc: "这是第 28 个奖励的简短介绍", link: "https://example.com/reward/028" },
-    { name: "奖励 029", desc: "这是第 29 个奖励的简短介绍", link: "https://example.com/reward/029" },
-    { name: "奖励 030", desc: "这是第 30 个奖励的简短介绍", link: "https://example.com/reward/030" },
-
-    { name: "奖励 031", desc: "这是第 31 个奖励的简短介绍", link: "https://example.com/reward/031" },
-    { name: "奖励 032", desc: "这是第 32 个奖励的简短介绍", link: "https://example.com/reward/032" },
-    { name: "奖励 033", desc: "这是第 33 个奖励的简短介绍", link: "https://example.com/reward/033" },
-    { name: "奖励 034", desc: "这是第 34 个奖励的简短介绍", link: "https://example.com/reward/034" },
-    { name: "奖励 035", desc: "这是第 35 个奖励的简短介绍", link: "https://example.com/reward/035" },
-    { name: "奖励 036", desc: "这是第 36 个奖励的简短介绍", link: "https://example.com/reward/036" },
-    { name: "奖励 037", desc: "这是第 37 个奖励的简短介绍", link: "https://example.com/reward/037" },
-    { name: "奖励 038", desc: "这是第 38 个奖励的简短介绍", link: "https://example.com/reward/038" },
-    { name: "奖励 039", desc: "这是第 39 个奖励的简短介绍", link: "https://example.com/reward/039" },
-    { name: "奖励 040", desc: "这是第 40 个奖励的简短介绍", link: "https://example.com/reward/040" },
-
-    { name: "奖励 041", desc: "这是第 41 个奖励的简短介绍", link: "https://example.com/reward/041" },
-    { name: "奖励 042", desc: "这是第 42 个奖励的简短介绍", link: "https://example.com/reward/042" },
-    { name: "奖励 043", desc: "这是第 43 个奖励的简短介绍", link: "https://example.com/reward/043" },
-    { name: "奖励 044", desc: "这是第 44 个奖励的简短介绍", link: "https://example.com/reward/044" },
-    { name: "奖励 045", desc: "这是第 45 个奖励的简短介绍", link: "https://example.com/reward/045" },
-    { name: "奖励 046", desc: "这是第 46 个奖励的简短介绍", link: "https://example.com/reward/046" },
-    { name: "奖励 047", desc: "这是第 47 个奖励的简短介绍", link: "https://example.com/reward/047" },
-    { name: "奖励 048", desc: "这是第 48 个奖励的简短介绍", link: "https://example.com/reward/048" },
-    { name: "奖励 049", desc: "这是第 49 个奖励的简短介绍", link: "https://example.com/reward/049" },
-    { name: "奖励 050", desc: "这是第 50 个奖励的简短介绍", link: "https://example.com/reward/050" },
-
-    { name: "奖励 051", desc: "这是第 51 个奖励的简短介绍", link: "https://example.com/reward/051" },
-    { name: "奖励 052", desc: "这是第 52 个奖励的简短介绍", link: "https://example.com/reward/052" },
-    { name: "奖励 053", desc: "这是第 53 个奖励的简短介绍", link: "https://example.com/reward/053" },
-    { name: "奖励 054", desc: "这是第 54 个奖励的简短介绍", link: "https://example.com/reward/054" },
-    { name: "奖励 055", desc: "这是第 55 个奖励的简短介绍", link: "https://example.com/reward/055" },
-    { name: "奖励 056", desc: "这是第 56 个奖励的简短介绍", link: "https://example.com/reward/056" },
-    { name: "奖励 057", desc: "这是第 57 个奖励的简短介绍", link: "https://example.com/reward/057" },
-    { name: "奖励 058", desc: "这是第 58 个奖励的简短介绍", link: "https://example.com/reward/058" },
-    { name: "奖励 059", desc: "这是第 59 个奖励的简短介绍", link: "https://example.com/reward/059" },
-    { name: "奖励 060", desc: "这是第 60 个奖励的简短介绍", link: "https://example.com/reward/060" },
-
-    { name: "奖励 061", desc: "这是第 61 个奖励的简短介绍", link: "https://example.com/reward/061" },
-    { name: "奖励 062", desc: "这是第 62 个奖励的简短介绍", link: "https://example.com/reward/062" },
-    { name: "奖励 063", desc: "这是第 63 个奖励的简短介绍", link: "https://example.com/reward/063" },
-    { name: "奖励 064", desc: "这是第 64 个奖励的简短介绍", link: "https://example.com/reward/064" },
-    { name: "奖励 065", desc: "这是第 65 个奖励的简短介绍", link: "https://example.com/reward/065" },
-    { name: "奖励 066", desc: "这是第 66 个奖励的简短介绍", link: "https://example.com/reward/066" },
-    { name: "奖励 067", desc: "这是第 67 个奖励的简短介绍", link: "https://example.com/reward/067" },
-    { name: "奖励 068", desc: "这是第 68 个奖励的简短介绍", link: "https://example.com/reward/068" },
-    { name: "奖励 069", desc: "这是第 69 个奖励的简短介绍", link: "https://example.com/reward/069" },
-    { name: "奖励 070", desc: "这是第 70 个奖励的简短介绍", link: "https://example.com/reward/070" },
-
-    { name: "奖励 071", desc: "这是第 71 个奖励的简短介绍", link: "https://example.com/reward/071" },
-    { name: "奖励 072", desc: "这是第 72 个奖励的简短介绍", link: "https://example.com/reward/072" },
-    { name: "奖励 073", desc: "这是第 73 个奖励的简短介绍", link: "https://example.com/reward/073" },
-    { name: "奖励 074", desc: "这是第 74 个奖励的简短介绍", link: "https://example.com/reward/074" },
-    { name: "奖励 075", desc: "这是第 75 个奖励的简短介绍", link: "https://example.com/reward/075" },
-    { name: "奖励 076", desc: "这是第 76 个奖励的简短介绍", link: "https://example.com/reward/076" },
-    { name: "奖励 077", desc: "这是第 77 个奖励的简短介绍", link: "https://example.com/reward/077" },
-    { name: "奖励 078", desc: "这是第 78 个奖励的简短介绍", link: "https://example.com/reward/078" },
-    { name: "奖励 079", desc: "这是第 79 个奖励的简短介绍", link: "https://example.com/reward/079" },
-    { name: "奖励 080", desc: "这是第 80 个奖励的简短介绍", link: "https://example.com/reward/080" },
-
-    { name: "奖励 081", desc: "这是第 81 个奖励的简短介绍", link: "https://example.com/reward/081" },
-    { name: "奖励 082", desc: "这是第 82 个奖励的简短介绍", link: "https://example.com/reward/082" },
-    { name: "奖励 083", desc: "这是第 83 个奖励的简短介绍", link: "https://example.com/reward/083" },
-    { name: "奖励 084", desc: "这是第 84 个奖励的简短介绍", link: "https://example.com/reward/084" },
-    { name: "奖励 085", desc: "这是第 85 个奖励的简短介绍", link: "https://example.com/reward/085" },
-    { name: "奖励 086", desc: "这是第 86 个奖励的简短介绍", link: "https://example.com/reward/086" },
-    { name: "奖励 087", desc: "这是第 87 个奖励的简短介绍", link: "https://example.com/reward/087" },
-    { name: "奖励 088", desc: "这是第 88 个奖励的简短介绍", link: "https://example.com/reward/088" },
-    { name: "奖励 089", desc: "这是第 89 个奖励的简短介绍", link: "https://example.com/reward/089" },
-    { name: "奖励 090", desc: "这是第 90 个奖励的简短介绍", link: "https://example.com/reward/090" },
-
-    { name: "奖励 091", desc: "这是第 91 个奖励的简短介绍", link: "https://example.com/reward/091" },
-    { name: "奖励 092", desc: "这是第 92 个奖励的简短介绍", link: "https://example.com/reward/092" },
-    { name: "奖励 093", desc: "这是第 93 个奖励的简短介绍", link: "https://example.com/reward/093" },
-    { name: "奖励 094", desc: "这是第 94 个奖励的简短介绍", link: "https://example.com/reward/094" },
-    { name: "奖励 095", desc: "这是第 95 个奖励的简短介绍", link: "https://example.com/reward/095" },
-    { name: "奖励 096", desc: "这是第 96 个奖励的简短介绍", link: "https://example.com/reward/096" },
-    { name: "奖励 097", desc: "这是第 97 个奖励的简短介绍", link: "https://example.com/reward/097" },
-    { name: "奖励 098", desc: "这是第 98 个奖励的简短介绍", link: "https://example.com/reward/098" },
-    { name: "奖励 099", desc: "这是第 99 个奖励的简短介绍", link: "https://example.com/reward/099" },
-    { name: "奖励 100", desc: "这是第 100 个奖励的简短介绍", link: "https://example.com/reward/100" },
-];
-
-/* ================================================================
-   以下为逻辑代码，一般不需要修改
-   ================================================================ */
-const $ = id => document.getElementById(id);
-const input       = $("userInput");
-const actionBtn   = $("actionBtn");
-const loading     = $("loading");
-const result      = $("result");
-const resultHeader= $("resultHeader");
-const rewardName  = $("rewardName");
-const rewardDesc  = $("rewardDesc");
-const rewardLink  = $("rewardLink");
-const matchList   = $("matchList");
-const errorBox    = $("errorBox");
-const historyBox  = $("history");
-const historyList = $("historyList");
-const stats       = $("stats");
-
-let lastIndex = null;   // 防止连续抽到同一个
-let history   = [];     // 本次抽奖记录
-let currentReward = null;
-
-/* ---------- 工具函数 ---------- */
-function hideAll() {
-    result.classList.remove("show");
-    matchList.classList.remove("show");
-    errorBox.classList.remove("show");
-}
-
-function showError(msg) {
-    hideAll();
-    errorBox.textContent = "⚠️ " + msg;
-    errorBox.classList.add("show");
-}
-
-function drawRandom() {
-    if (REWARDS.length <= 1) return { index: 0, reward: REWARDS[0] };
-    let idx = Math.floor(Math.random() * REWARDS.length);
-    while (idx === lastIndex) {
-        idx = Math.floor(Math.random() * REWARDS.length);
+  /* ---------- Base64URL ---------- */
+  function toB64u(buf) {
+    var b = new Uint8Array(buf), s = '', CH = 0x8000;
+    for (var i = 0; i < b.length; i += CH) {
+      s += String.fromCharCode.apply(null, b.subarray(i, i + CH));
     }
-    lastIndex = idx;
-    return { index: idx, reward: REWARDS[idx] };
-}
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function fromB64u(str) {
+    str = String(str).replace(/-/g, '+').replace(/_/g, '/');
+    var pad = str.length % 4 ? '===='.slice(str.length % 4) : '';
+    var bin = atob(str + pad), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function rnd(n) { return crypto.getRandomValues(new Uint8Array(n)); }
+  function b64uRnd(n) { return toB64u(rnd(n)); }
 
-function pickByIndex(num) {
-    if (num >= 1 && num <= REWARDS.length) {
-        return { index: num - 1, reward: REWARDS[num - 1] };
-    }
-    return null;
-}
-
-function pickByKeyword(kw) {
-    const lower = kw.toLowerCase();
-    const matches = [];
-    REWARDS.forEach((r, i) => {
-        if (r.name.toLowerCase().includes(lower) ||
-            r.desc.toLowerCase().includes(lower)) {
-            matches.push({ index: i, reward: r });
-        }
-    });
-    return matches;
-}
-
-function formatIndex(i) {
-    return "#" + String(i + 1).padStart(3, "0");
-}
-
-/* ---------- 展示结果 ---------- */
-function showReward(reward, index, title) {
-    hideAll();
-    currentReward = reward;
-
-    resultHeader.textContent = title;
-    rewardName.textContent   = reward.name;
-    rewardDesc.textContent   = reward.desc;
-    rewardLink.textContent   = reward.link;
-
-    result.classList.add("show");
-    result.scrollIntoView({ behavior: "smooth", block: "nearest" });
-
-    // 记入历史
-    history.push({ index: index, reward: reward, time: new Date() });
-    renderHistory();
-}
-
-function showMatches(matches, keyword) {
-    hideAll();
-    matchList.innerHTML =
-        `<h3>🔍 找到 ${matches.length} 个包含「${escapeHtml(keyword)}」的奖励，点击选择：</h3>`;
-
-    matches.forEach((m, i) => {
-        const div = document.createElement("div");
-        div.className = "match-item";
-        div.innerHTML = `
-            <div class="m-name">
-                <span class="m-idx">${formatIndex(m.index)}</span>${escapeHtml(m.reward.name)}
-            </div>
-            <div class="m-desc">${escapeHtml(m.reward.desc)}</div>
-        `;
-        div.addEventListener("click", () => {
-            showReward(m.reward, m.index, `🎯 定向取「${keyword}」`);
-        });
-        matchList.appendChild(div);
-    });
-
-    matchList.classList.add("show");
-}
-
-function escapeHtml(s) {
-    return String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-}
-
-function renderHistory() {
-    if (history.length === 0) {
-        historyBox.classList.remove("show");
-        stats.textContent = "";
-        return;
-    }
-    historyBox.classList.add("show");
-    historyList.innerHTML = "";
-    // 倒序显示，最新的在上面
-    history.slice().reverse().forEach((h, i) => {
-        const div = document.createElement("div");
-        div.className = "history-item";
-        div.innerHTML = `
-            <span class="h-idx">${formatIndex(h.index)}</span>
-            <span>${escapeHtml(h.reward.name)}</span>
-        `;
-        historyList.appendChild(div);
-    });
-    stats.textContent = `本次共抽取 ${history.length} 次`;
-}
-
-/* ---------- 主流程 ---------- */
-function handleAction() {
-    const text = input.value.trim();
-
-    // 1) 空输入 → 随机抽
-    if (text === "") {
-        doRandom();
-        return;
-    }
-
-    // 2) 纯数字 → 定向取第 N 号
-    if (/^\d+$/.test(text)) {
-        const num = parseInt(text, 10);
-        const hit = pickByIndex(num);
-        if (!hit) {
-            showError(`编号超出范围，本奖励池只有 1 ~ ${REWARDS.length} 号。`);
-            return;
-        }
-        showReward(hit.reward, hit.index, `🎯 定向取第 ${num} 号奖励`);
-        input.value = "";
-        return;
-    }
-
-    // 3) 其他文字 → 模糊匹配
-    const matches = pickByKeyword(text);
-    if (matches.length === 0) {
-        showError(`没有找到包含「${text}」的奖励。可以试试直接输入编号，例如 42`);
-        return;
-    }
-    if (matches.length === 1) {
-        showReward(matches[0].reward, matches[0].index, `🎯 定向取「${text}」`);
-        input.value = "";
-    } else {
-        showMatches(matches, text);
-        input.value = "";
-    }
-}
-
-function doRandom() {
-    hideAll();
-    loading.classList.add("show");
-    result.classList.remove("show");
-
-    setTimeout(() => {
-        loading.classList.remove("show");
-        const { index, reward } = drawRandom();
-        showReward(reward, index, "🎉 恭喜获得奖励！");
-    }, 900);
-}
-
-/* ---------- 事件绑定 ---------- */
-actionBtn.addEventListener("click", () => {
-    const text = input.value.trim();
-    if (text === "") {
-        // 输入框为空时点击按钮 → 随机抽
-        doRandom();
-    } else {
-        handleAction();
-    }
-});
-
-input.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-        e.preventDefault();
-        const text = input.value.trim();
-        if (text === "") {
-            doRandom();
-        } else {
-            handleAction();
-        }
-    }
-});
-
-// 复制按钮
-$("copyBtn").addEventListener("click", () => {
-    if (!currentReward) return;
-    const link = currentReward.link;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(link).then(
-            () => flashCopyBtn("✅ 已复制"),
-            () => fallbackCopy(link)
+  /* ---------- 密钥 ---------- */
+  function genCEK() {
+    return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  }
+  function importCEK(b64u) {
+    return crypto.subtle.importKey('raw', fromB64u(b64u), { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  }
+  function exportKey(key) {
+    return crypto.subtle.exportKey('raw', key).then(toB64u);
+  }
+  function deriveKEK(password, saltB64u) {
+    return crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey'])
+      .then(function (base) {
+        return crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt: fromB64u(saltB64u), iterations: PBKDF2_ITER, hash: 'SHA-512' },
+          base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
         );
-    } else {
-        fallbackCopy(link);
-    }
-});
+      });
+  }
+  // 用 KEK 包裹 CEK
+  function wrapCEK(cek, kek) {
+    return crypto.subtle.exportKey('raw', cek).then(function (raw) {
+      var iv = rnd(12);
+      return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv, tagLength: 128 }, kek, raw)
+        .then(function (ct) { return { iv: toB64u(iv), wrapped: toB64u(ct) }; });
+    });
+  }
+  function unwrapCEK(wrappedB64u, ivB64u, kek) {
+    return crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: fromB64u(ivB64u), tagLength: 128 }, kek, fromB64u(wrappedB64u)
+    ).then(function (raw) {
+      return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+    });
+  }
 
-function fallbackCopy(text) {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand("copy"); flashCopyBtn("✅ 已复制"); }
-    catch (e) { flashCopyBtn("❌ 复制失败"); }
+
+  /* ---- PBKDF2 工作线程：25 万次迭代放到后台，主线程不再卡顿 ---- */
+  var WORKER_SRC = [
+    "var E=new TextEncoder();",
+    "function f64(s){s=String(s).split('-').join('+').split('_').join('/');while(s.length%4)s+='=';var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i);return o;}",
+    "function t64(x){var u=x instanceof Uint8Array?x:new Uint8Array(x);var s='',C=0x8000;for(var i=0;i<u.length;i+=C)s+=String.fromCharCode.apply(null,u.subarray(i,i+C));s=btoa(s);return s.split('+').join('-').split('/').join('_').split('=').join('');}",
+    "function fail(m){postMessage({ok:false,err:String(m)});}",
+    "onmessage=function(e){var d=e.data;try{",
+    "  crypto.subtle.importKey('raw',E.encode(d.pwd),'PBKDF2',false,['deriveKey']).then(function(b){",
+    "    return crypto.subtle.deriveKey({name:'PBKDF2',salt:f64(d.salt),iterations:d.iter,hash:'SHA-512'},",
+    "      b,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);",
+    "  }).then(function(kek){",
+    "    if(d.op==='wrap'){",
+    "      var iv=crypto.getRandomValues(new Uint8Array(12));",
+    "      return crypto.subtle.encrypt({name:'AES-GCM',iv:iv,tagLength:128},kek,f64(d.raw)).then(function(ct){",
+    "        postMessage({ok:true,data:{iv:t64(iv),wrapped:t64(new Uint8Array(ct))}});});",
+    "    }",
+    "    return crypto.subtle.decrypt({name:'AES-GCM',iv:f64(d.iv),tagLength:128},kek,f64(d.wrapped)).then(function(raw){",
+    "      postMessage({ok:true,data:{raw:t64(new Uint8Array(raw))}});});",
+    "  }).catch(function(err){fail(err&&err.message||err);});",
+    "}catch(err){fail(err&&err.message||err);}};"
+  ].join('\n');
+
+  var workerUrl = null, workerBroken = false;
+  function getWorkerUrl() {
+    if (workerUrl) return workerUrl;
+    if (workerBroken) return null;
+    try {
+      workerUrl = URL.createObjectURL(new Blob([WORKER_SRC], { type: 'text/javascript' }));
+    } catch (e) { workerBroken = true; return null; }
+    return workerUrl;
+  }
+  function workerRun(msg) {
+    var url = getWorkerUrl();
+    if (!url) return Promise.reject(new Error('no-worker'));
+    return new Promise(function (res, rej) {
+      var w;
+      try { w = new Worker(url); } catch (e) { workerBroken = true; return rej(e); }
+      var done = false;
+      w.onmessage = function (e) {
+        done = true; w.terminate();
+        if (e.data && e.data.ok) res(e.data.data); else rej(new Error((e.data && e.data.err) || 'worker error'));
+      };
+      w.onerror = function () {
+        if (done) return; done = true; w.terminate(); workerBroken = true; rej(new Error('worker failed'));
+      };
+      try { w.postMessage(msg); } catch (e) { w.terminate(); rej(e); }
+    });
+  }
+  function wrapCEKAsync(rawB64u, password, salt, iter) {
+    return workerRun({ op: 'wrap', raw: rawB64u, pwd: password, salt: salt, iter: iter });
+  }
+  function unwrapCEKAsync(wrappedB64u, ivB64u, password, salt, iter) {
+    return workerRun({ op: 'unwrap', wrapped: wrappedB64u, iv: ivB64u, pwd: password, salt: salt, iter: iter })
+      .then(function (d) { return d.raw; });
+  }
+
+
+  /* ---------- 分享包防篡改：基于内容密钥派生 HMAC 签名密钥 ---------- */
+  var PACK_MAGIC = 'KBPK', PACK_VER = 3;
+  function deriveMacKey(rawKeyB64u) {
+    // 只有持有正确内容密钥的人，才能生成/校验签名
+    return crypto.subtle.importKey('raw', fromB64u(rawKeyB64u), 'HKDF', false, ['deriveKey'])
+      .then(function (base) {
+        return crypto.subtle.deriveKey(
+          { name: 'HKDF', hash: 'SHA-256',
+            salt: enc.encode('kobecloud-pack-v3'), info: enc.encode('pack-integrity') },
+          base, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']
+        );
+      });
+  }
+  // 签名内容：包名 + 版本 + 元数据 + 密文长度（密文本身由 GCM tag 保证不可篡改）
+  function signPayload(rawKeyB64u, metaJson, cipherSize) {
+    var head = enc.encode(PACK_MAGIC + PACK_VER + cipherSize + '|');
+    var body = enc.encode(metaJson);
+    var buf = new Uint8Array(head.length + body.length);
+    buf.set(head, 0); buf.set(body, head.length);
+    return deriveMacKey(rawKeyB64u)
+      .then(function (mk) { return crypto.subtle.sign('HMAC', mk, buf); })
+      .then(toB64u);
+  }
+  function verifyPayload(rawKeyB64u, metaJson, cipherSize, sigB64u) {
+    return signPayload(rawKeyB64u, metaJson, cipherSize)
+      .then(function (s) { return s === sigB64u; });
+  }
+  // 常量时间比较（防旁路）
+  function safeEq(a, b) {
+    a = String(a); b = String(b);
+    if (a.length !== b.length) return false;
+    var r = 0;
+    for (var i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    return r === 0;
+  }
+
+  /* ---------- 流加密：明文 Blob -> 密文 Blob ---------- */
+  function encryptBlob(blob, key, onProgress) {
+    var total = blob.size, parts = [], offset = 0;
+    var head = new Uint8Array(11);
+    head.set(enc.encode(MAGIC), 0);
+    new DataView(head.buffer).setUint32(7, CHUNK, false);
+    parts.push(head);
+
+    function next() {
+      if (offset >= total) {
+        if (onProgress) onProgress(1);
+        return Promise.resolve(new Blob(parts, { type: 'application/octet-stream' }));
+      }
+      var end = Math.min(offset + CHUNK, total);
+      return blob.slice(offset, end).arrayBuffer().then(function (buf) {
+        var iv = rnd(12);
+        return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv, tagLength: 128 }, key, buf)
+          .then(function (ct) {
+            var block = new Uint8Array(12 + ct.byteLength);
+            block.set(iv, 0);
+            block.set(new Uint8Array(ct), 12);
+            // 存成 Blob 而非裸数组：大文件时浏览器可换页到磁盘，显著降低内存峰值
+            parts.push(new Blob([block]));
+            offset = end;
+            if (onProgress) onProgress(total ? offset / total : 1);
+            return next();
+          });
+      });
+    }
+    return next();
+  }
+
+  /* ---------- 流解密：密文 Blob -> 明文 Blob ---------- */
+  function decryptBlob(blob, key, onProgress, mimeType) {
+    var total = blob.size;
+    return blob.slice(0, 11).arrayBuffer().then(function (hb) {
+      var head = new Uint8Array(hb);
+      if (dec.decode(head.subarray(0, 7)) !== MAGIC) throw new Error('密文格式不正确或已损坏');
+      var chunkSize = new DataView(head.buffer).getUint32(7, false);
+      var off = 11, parts = [];
+
+      function next() {
+        if (off >= total) {
+          if (onProgress) onProgress(1);
+          return Promise.resolve(new Blob(parts, mimeType ? { type: mimeType } : undefined));
+        }
+        var ivBuf = blob.slice(off, off + 12).arrayBuffer();
+        var ctLen = Math.min(chunkSize + 16, total - off - 12);
+        var ctBuf = blob.slice(off + 12, off + 12 + ctLen).arrayBuffer();
+        return Promise.all([ivBuf, ctBuf]).then(function (ab) {
+          return crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: new Uint8Array(ab[0]), tagLength: 128 }, key, ab[1]
+          ).then(function (pt) {
+            parts.push(new Blob([pt]));
+            off += 12 + ctLen;
+            if (onProgress) onProgress(total ? off / total : 1);
+            return next();
+          });
+        });
+      }
+      return next();
+    });
+  }
+
+  /* ---------- 元数据（文件名/类型等）加密 ---------- */
+  function encryptJson(obj, key) {
+    var iv = rnd(12);
+    return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv, tagLength: 128 }, key, enc.encode(JSON.stringify(obj)))
+      .then(function (ct) { return { iv: toB64u(iv), ct: toB64u(ct) }; });
+  }
+  function decryptJson(ivB64u, ctB64u, key) {
+    return crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64u(ivB64u), tagLength: 128 }, key, fromB64u(ctB64u))
+      .then(function (pt) { return JSON.parse(dec.decode(pt)); });
+  }
+
+  function fingerprint(b64uKey) {
+    return crypto.subtle.digest('SHA-256', fromB64u(b64uKey)).then(function (d) {
+      return toB64u(d).slice(0, 8);
+    });
+  }
+
+  return {
+    CHUNK: CHUNK, PBKDF2_ITER: PBKDF2_ITER,
+    PACK_MAGIC: PACK_MAGIC, PACK_VER: PACK_VER,
+    deriveMacKey: deriveMacKey, signPayload: signPayload,
+    verifyPayload: verifyPayload, safeEq: safeEq,
+    wrapCEKAsync: wrapCEKAsync, unwrapCEKAsync: unwrapCEKAsync,
+    toB64u: toB64u, fromB64u: fromB64u, b64uRnd: b64uRnd,
+    genCEK: genCEK, importCEK: importCEK, exportKey: exportKey,
+    deriveKEK: deriveKEK, wrapCEK: wrapCEK, unwrapCEK: unwrapCEK,
+    encryptBlob: encryptBlob, decryptBlob: decryptBlob,
+    encryptJson: encryptJson, decryptJson: decryptJson,
+    fingerprint: fingerprint
+  };
+})();
+
+</script>
+<script>
+/* ============================================================
+ *  科比云盘 · 主程序
+ * ============================================================ */
+(function () {
+  'use strict';
+  var K = window.KCrypto;
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+  var MAX_DAYS = 365;                 // 有效期上限
+  var state = {
+    queue: [], expireMin: 10080, customExpire: null, packBlob: null,
+    wm: { pos: 'br', color: '#FDB927', text: '' }
+  };
+
+  /* ================= 存储层（IndexedDB → localStorage → 内存 自动降级） ================= */
+  var DB = (function () {
+    var db = null, name = 'kobecloud', ver = 1, store = 'files';
+    var PFX = 'kbc:';
+    var mode = null;              // 'idb' | 'local' | 'mem'
+    var mem = {};
+    var LOCAL_MAX = 4 * 1024 * 1024;  // localStorage 降级模式下的单文件上限
+
+    /* ---- IndexedDB 探测 ---- */
+    function openIDB() {
+      return new Promise(function (res, rej) {
+        var req;
+        try { req = indexedDB.open(name, ver); } catch (e) { return rej(e); }
+        var t = setTimeout(function () { rej(new Error('IndexedDB 超时')); }, 3000);
+        req.onupgradeneeded = function () {
+          var d = req.result;
+          if (!d.objectStoreNames.contains(store)) d.createObjectStore(store, { keyPath: 'id' });
+        };
+        req.onsuccess = function () { clearTimeout(t); db = req.result; res(db); };
+        req.onerror = function () { clearTimeout(t); rej(req.error); };
+        req.onblocked = function () { clearTimeout(t); rej(new Error('blocked')); };
+      });
+    }
+    function detect() {
+      if (mode) return Promise.resolve(mode);
+      if (typeof indexedDB === 'undefined' || !indexedDB) { mode = canLocal() ? 'local' : 'mem'; return Promise.resolve(mode); }
+      return openIDB().then(function () {
+        mode = 'idb';
+        try { localStorage.setItem(PFX + '_probe', '1'); localStorage.removeItem(PFX + '_probe'); } catch (e) {}
+        return mode;
+      }).catch(function () {
+        mode = canLocal() ? 'local' : 'mem';
+        return mode;
+      });
+    }
+    function canLocal() {
+      try { localStorage.setItem(PFX + '_t', '1'); localStorage.removeItem(PFX + '_t'); return true; }
+      catch (e) { return false; }
+    }
+    function tx(m) { return db.transaction(store, m).objectStore(store); }
+
+    /* ---- 序列化：Blob <-> base64（仅 local 模式需要） ---- */
+    function blobToB64(blob) {
+      return blob.arrayBuffer().then(function (ab) { return K.toB64u(ab); });
+    }
+    function b64ToBlob(b64) {
+      return new Blob([K.fromB64u(b64)]);
+    }
+    function ser(rec) {
+      if (mode !== 'local') return Promise.resolve(rec);
+      var size = rec.cipher ? rec.cipher.size : 0;
+      if (size > LOCAL_MAX) {
+        var e = new Error('当前为降级存储（双击本地文件打开导致），单文件不能超过 4MB。' +
+          '如需存大文件，请用本地服务器或 HTTPS 访问：在此目录执行 python3 -m http.server 8000');
+        e.quota = true; throw e;
+      }
+      var copy = {};
+      Object.keys(rec).forEach(function (k) { if (k !== 'cipher') copy[k] = rec[k]; });
+      return blobToB64(rec.cipher).then(function (b) { copy._b64 = b; copy._size = size; return copy; });
+    }
+    function deser(rec) {
+      if (mode !== 'local' || !rec || !rec._b64) return Promise.resolve(rec);
+      var copy = {};
+      Object.keys(rec).forEach(function (k) { copy[k] = rec[k]; });
+      copy.cipher = b64ToBlob(rec._b64);
+      delete copy._b64;
+      return Promise.resolve(copy);
+    }
+
+    function put(rec) {
+      return detect().then(function () {
+        if (mode === 'mem') { mem[rec.id] = rec; return; }
+        return ser(rec).then(function (r) {
+          if (mode === 'idb') {
+            return new Promise(function (res, rej) {
+              var q = tx('readwrite').put(r); q.onsuccess = res; q.onerror = function () { rej(q.error); };
+            });
+          }
+          try { localStorage.setItem(PFX + r.id, JSON.stringify(r)); }
+          catch (e) {
+            throw new Error('本地存储已满，请先删除旧文件或改用服务器模式（单文件上限 4MB）');
+          }
+        });
+      });
+    }
+    function get(id) {
+      return detect().then(function () {
+        if (mode === 'mem') return mem[id] || null;
+        if (mode === 'idb') {
+          return new Promise(function (res, rej) {
+            var q = tx('readonly').get(id); q.onsuccess = function () { res(q.result || null); }; q.onerror = function () { rej(q.error); };
+          }).then(deser);
+        }
+        var s = localStorage.getItem(PFX + id);
+        return deser(s ? JSON.parse(s) : null);
+      });
+    }
+    function all() {
+      return detect().then(function () {
+        if (mode === 'mem') return Object.keys(mem).map(function (k) { return mem[k]; });
+        if (mode === 'idb') {
+          return new Promise(function (res) {
+            var q = tx('readonly').getAll(); q.onsuccess = function () { res(q.result || []); }; q.onerror = function () { res([]); };
+          }).then(function (list) { return Promise.all(list.map(deser)); });
+        }
+        var out = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && k.indexOf(PFX) === 0 && k !== PFX + '_t' && k !== PFX + '_probe') {
+            try { out.push(JSON.parse(localStorage.getItem(k))); } catch (e) {}
+          }
+        }
+        return Promise.all(out.map(deser));
+      }).catch(function () { return []; });
+    }
+    function del(id) {
+      return detect().then(function () {
+        if (mode === 'mem') { delete mem[id]; return; }
+        if (mode === 'idb') {
+          return new Promise(function (res) { var q = tx('readwrite').delete(id); q.onsuccess = res; q.onerror = res; });
+        }
+        localStorage.removeItem(PFX + id);
+      });
+    }
+    function wipe() {
+      return detect().then(function () {
+        if (mode === 'mem') { mem = {}; return; }
+        if (mode === 'idb') {
+          return new Promise(function (res) { var q = tx('readwrite').clear(); q.onsuccess = res; q.onerror = res; });
+        }
+        var keys = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i); if (k && k.indexOf(PFX) === 0) keys.push(k);
+        }
+        keys.forEach(function (k) { localStorage.removeItem(k); });
+      });
+    }
+    return { put: put, get: get, all: all, del: del, wipe: wipe, modeOf: function () { return detect(); } };
+  })();
+
+  /* ================= 工具 ================= */
+  var toastTimer = null;
+  function toast(msg, ms) {
+    var t = $('#toast');
+    t.textContent = msg;
+    t.hidden = false;
+    // 强制回流，保证连续两次 toast 也能重放动画
+    void t.offsetWidth;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      t.classList.remove('show');
+      setTimeout(function () { if (!t.classList.contains('show')) t.hidden = true; }, 200);
+    }, ms || 2000);
+  }
+  function sizeStr(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    if (n < 1073741824) return (n / 1048576).toFixed(1) + ' MB';
+    return (n / 1073741824).toFixed(2) + ' GB';
+  }
+  function iconOf(type, name) {
+    if (type.indexOf('image/') === 0) return '🖼';
+    if (type.indexOf('video/') === 0) return '🎬';
+    if (type.indexOf('audio/') === 0) return '🎵';
+    if (type.indexOf('text/') === 0 || /\.txt$/i.test(name)) return '📝';
+    if (/pdf/i.test(type) || /\.pdf$/i.test(name)) return '📕';
+    if (/zip|rar|7z|tar|gz/i.test(type) || /\.(zip|rar|7z)$/i.test(name)) return '🗜';
+    if (/word|doc/i.test(type) || /\.docx?$/i.test(name)) return '📄';
+    if (/excel|sheet|xls/i.test(type) || /\.xlsx?$/i.test(name)) return '📊';
+    if (/ppt|powerpoint/i.test(type) || /\.pptx?$/i.test(name)) return '📽';
+    return '📦';
+  }
+  function leftStr(ms) {
+    if (ms <= 0) return '已过期';
+    var s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+    if (d) return '剩 ' + d + ' 天 ' + h + ' 小时';
+    if (h) return '剩 ' + h + ' 小时 ' + m + ' 分';
+    return '剩 ' + Math.max(m, 1) + ' 分钟';
+  }
+  function copy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(function () { toast('链接已复制'); })
+        .catch(function () { legacyCopy(text); });
+    }
+    legacyCopy(text);
+    return Promise.resolve();
+  }
+  function legacyCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('链接已复制'); } catch (e) { toast('复制失败，请长按手动复制'); }
     document.body.removeChild(ta);
-}
+  }
+  function shareLink(rec) {
+    var base = location.href.split('#')[0];
+    var url = base + '#/s/' + rec.id;
+    if (!rec.hasPassword && rec.k) url += '?k=' + rec.k;
+    return url;
+  }
+  function parseHash() {
+    var h = location.hash || '';
+    var m = h.match(/^#\/s\/([^?]+)(?:\?(.*))?$/);
+    if (!m) return null;
+    var q = {};
+    (m[2] || '').split('&').forEach(function (kv) {
+      if (!kv) return; var p = kv.split('='); q[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || '');
+    });
+    return { id: m[1], k: q.k || '' };
+  }
 
-function flashCopyBtn(msg) {
-    const btn = $("copyBtn");
-    const old = btn.textContent;
-    btn.textContent = msg;
-    setTimeout(() => { btn.textContent = old; }, 1200);
-}
+  /* ================= 首页：文件选择 ================= */
+  function initHome() {
+    var dz = $('#dropZone'), input = $('#fileInput');
+    $('#pickBtn').onclick = function (e) {
+      if (e) e.stopPropagation();
+      input.click();
+    };
+    dz.onclick = function (e) {
+      if (e.target.closest('#pickBtn')) return;
+      input.click();
+    };
+    input.onchange = function () { addFiles(input.files); input.value = ''; };
+    ['dragenter', 'dragover'].forEach(function (ev) {
+      dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('hot'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+      dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove('hot'); });
+    });
+    dz.addEventListener('drop', function (e) { addFiles(e.dataTransfer.files); });
 
-// 打开链接按钮
-$("openBtn").addEventListener("click", () => {
-    if (!currentReward) return;
-    window.open(currentReward.link, "_blank", "noopener,noreferrer");
-});
+    $('#clearQueueBtn').onclick = function () { state.queue = []; renderQueue(); };
 
-// 页面加载后自动聚焦输入框
-window.addEventListener("load", () => {
-    input.focus();
-    if (REWARDS.length > 0) {
-        stats.textContent = `奖励池已加载：共 ${REWARDS.length} 个盲盒`;
+    // 有效期
+    $$('#expireChips .chip').forEach(function (c) {
+      c.onclick = function () {
+        $$('#expireChips .chip').forEach(function (x) { x.classList.remove('active'); });
+        c.classList.add('active'); state.expireMin = parseInt(c.dataset.min, 10);
+        $('#expireCustom').value = ''; state.customExpire = null; renderExpirePreview();
+      };
+    });
+    $('#expireCustom').onchange = function () {
+      var v = $('#expireCustom').value;
+      if (!v) { // 清空后回退到默认 7 天
+        state.customExpire = null; state.expireMin = 10080;
+        $$('#expireChips .chip').forEach(function (x) {
+          x.classList.toggle('active', x.dataset.min === '10080');
+        });
+        return renderExpirePreview();
+      }
+      var t = new Date(v).getTime();
+      var max = Date.now() + MAX_DAYS * 86400000;
+      if (!t) {
+        toast('时间格式不正确'); $('#expireCustom').value = ''; state.customExpire = null;
+      } else if (t <= Date.now()) {
+        toast('到期时间必须晚于当前时间'); $('#expireCustom').value = ''; state.customExpire = null;
+      } else if (t > max) {
+        toast('最长 ' + MAX_DAYS + ' 天，已自动调整到上限');
+        state.customExpire = max;
+        $('#expireCustom').value = toLocalInput(max);
+      } else {
+        state.customExpire = t;
+      }
+      $$('#expireChips .chip').forEach(function (x) { x.classList.remove('active'); });
+      renderExpirePreview();
+    };
+    $('#eyeBtn').onclick = function () {
+      var i = $('#pwdInput');
+      if (i.type === 'password') { i.type = 'text'; this.textContent = '隐藏'; }
+      else { i.type = 'password'; this.textContent = '显示'; }
+    };
+    $('#startBtn').onclick = startUpload;
+    $('#allowDownload').onchange = updateDlState;
+    updateDlState();
+    $('#cleanBtn').onclick = cleanExpired;
+    $('#importBtn').onclick = function () { $('#packInput').click(); };
+    $('#packInput').onchange = function () {
+      var f = $('#packInput').files[0]; if (f) importPack(f);
+      $('#packInput').value = '';
+    };
+    initWatermarkUI();
+    updateDlState();
+    $('#expireCustom').value = toLocalInput(Date.now() + 7 * 86400000);
+    $('#expireCustom').min = toLocalInput(Date.now() + 60000);
+    $('#expireCustom').max = toLocalInput(Date.now() + MAX_DAYS * 86400000);
+    renderExpirePreview();
+    renderLib();
+    cleanExpired(true);
+    DB.modeOf().then(function (m) {
+      if (m === 'local') {
+        toast('当前为降级存储模式（本地文件直接打开，浏览器禁用了数据库），单文件上限 4MB，链接仅在本浏览器有效', 5000);
+      } else if (m === 'mem') {
+        toast('当前环境无法持久化，文件仅在本页面有效，刷新即丢失', 5000);
+      }
+    });
+  }
+
+  function initWatermarkUI() {
+    $$('#posChips .chip').forEach(function (c) {
+      c.onclick = function (e) {
+        if (e) e.preventDefault();
+        $$('#posChips .chip').forEach(function (x) { x.classList.remove('active'); });
+        c.classList.add('active');
+        state.wm.pos = c.dataset.pos;
+        renderWmPreview();
+      };
+    });
+    $$('#colorChips .cchip').forEach(function (c) {
+      c.onclick = function (e) {
+        if (e) e.preventDefault();
+        $$('#colorChips .cchip').forEach(function (x) { x.classList.remove('active'); });
+        c.classList.add('active');
+        state.wm.color = c.dataset.color;
+        renderWmPreview();
+      };
+    });
+    var t = $('#wmText');
+    t.oninput = function () { state.wm.text = t.value; renderWmPreview(); };
+    renderWmPreview();
+  }
+
+  function wmLabel() {
+    return (state.wm.text && state.wm.text.trim()) ? state.wm.text.trim() : '科比云盘 · 禁止下载';
+  }
+  function renderWmPreview() {
+    var el = $('#wmPreview');
+    if (!el) return;
+    el.className = 'wm-pv wm-' + state.wm.pos;
+    el.style.color = state.wm.color;
+    el.innerHTML = '<span>' + wmLabel() + ' · ' + new Date().toLocaleTimeString('zh-CN') + '</span>';
+  }
+
+  function updateDlState() {
+    var on = $('#allowDownload').checked;
+    $('#wmOpts').hidden = on;          // 仅在关闭下载时展示水印设置
+    var row = $('#dlField').querySelector('.sw-row');
+    row.classList.toggle('on', on);
+    row.classList.toggle('off', !on);
+    $('#dlState').innerHTML = on
+      ? '<i class="sw-dot"></i>已开启 · 对方可下载原文件'
+      : '<i class="sw-dot"></i>已关闭 · 仅可在线观看，不可下载';
+    $('#dlHint').textContent = on
+      ? '开启状态：链接页面显示下载按钮，对方可下载并保存原文件。'
+      : '关闭状态：移除下载入口 + 屏蔽右键/拖拽/保存快捷键 + 画面动态水印（浏览器级防护，无法拦截专业抓包）。';
+  }
+
+  function toLocalInput(ts) {
+    var d = new Date(ts - new Date().getTimezoneOffset() * 60000);
+    return d.toISOString().slice(0, 16);
+  }
+  function renderExpirePreview() {
+    var t = expireAt();
+    $('#expirePreview').textContent = t ? '到期时间：' + new Date(t).toLocaleString('zh-CN') : '';
+  }
+  function expireAt() {
+    if (state.customExpire) return state.customExpire;
+    return Date.now() + state.expireMin * 60000;
+  }
+
+  var MAX_SIZE = 2 * 1024 * 1024 * 1024;   // 单文件 2GB 上限
+  function addFiles(list) {
+    var skipped = 0;
+    Array.prototype.forEach.call(list || [], function (f) {
+      if (f.size > MAX_SIZE) { skipped++; return; }
+      state.queue.push({ file: f, name: f.name, size: f.size, type: f.type || 'application/octet-stream' });
+    });
+    renderQueue();
+    if (skipped) toast(skipped + ' 个文件超过 2GB 上限，已跳过', 3200);
+    else if (!state.queue.length && list && list.length) toast('没有可加密的文件');
+  }
+  function renderQueue() {
+    var ul = $('#queueList'); ul.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    $('#queueCard').hidden = state.queue.length === 0;
+    $('#settingCard').hidden = state.queue.length === 0;
+    $('#dlField').hidden = state.queue.length === 0;
+    state.queue.forEach(function (q, i) {
+      var li = document.createElement('li');
+      li.innerHTML = '<div class="qicon">' + iconOf(q.type, q.name) + '</div>' +
+        '<div class="qinfo"><div class="qname"></div><div class="qsub">' + sizeStr(q.size) + '</div></div>' +
+        '<button class="mini del">移除</button>';
+      li.querySelector('.qname').textContent = q.name;
+      li.querySelector('.del').onclick = function () { state.queue.splice(i, 1); renderQueue(); };
+      frag.appendChild(li);
+    });
+    ul.appendChild(frag);
+  }
+
+  /* ================= 加密上传主流程 ================= */
+  function startUpload() {
+    if (!state.queue.length) return toast('请先选择文件');
+    if (state.busy) return;
+    state.busy = true;
+    $('#startBtn').disabled = true;
+    var pwd = $('#pwdInput').value;
+    var exp = expireAt();
+    var allowDl = $('#allowDownload').checked;
+    var wmCfg = { pos: state.wm.pos, color: state.wm.color, text: state.wm.text };
+    var items = state.queue.slice();
+    state.queue = [];
+    $$('.result-card').forEach(function (c) { c.remove(); });
+
+    $('#progressCard').hidden = false;
+    $('#settingCard').hidden = true;
+
+    var results = [];
+    var i = 0;
+    function step() {
+      if (i >= items.length) return finish();
+      var it = items[i], idx = i;
+      setProgress(idx / items.length, '正在加密 ' + it.name);
+      encryptOne(it, pwd, exp, allowDl, wmCfg, idx, items.length).then(function (rec) {
+        results[idx] = rec;           // 按选择顺序落位，避免并发完成时顺序错乱
+        i++; step();
+      }).catch(function (e) {
+        console.error(e); toast('「' + it.name + '」加密失败：' + e.message, 4000); i++; step();
+      });
     }
-});
+    step();
+
+    function finish() {
+      setProgress(1, '完成');
+      setTimeout(function () {
+        $('#progressCard').hidden = true;
+        $('#progressBar').style.transform = 'scaleX(0)';
+        $('#progressText').textContent = '';
+      }, 400);
+      state.busy = false;
+      $('#startBtn').disabled = false;
+      renderQueue(); renderLib();
+      if (!results.length) { $('#settingCard').hidden = state.queue.length === 0; return; }
+      // 依次插入到列表之前，最终顺序与选择顺序一致
+      results.filter(Boolean).forEach(function (r) { showResultCard(r); });
+      if (results.length > 1) toast(results.length + ' 个文件已加密，链接见下方', 2600);
+    }
+  }
+
+  function encryptOne(item, pwd, exp, allowDl, wmCfg, idx, total) {
+    var rec = {
+      id: K.b64uRnd(9).replace(/[^A-Za-z0-9]/g, '') + Date.now().toString(36),
+      name: item.name, type: item.type, size: item.size,
+      createdAt: Date.now(), expireAt: exp, allowDownload: allowDl,
+      hasPassword: !!pwd, wm: wmCfg
+    };
+    return K.genCEK().then(function (cek) {
+      return K.exportKey(cek).then(function (k) { rec.k = k; return cek; });
+    }).then(function (cek) {
+      var chain = Promise.resolve(cek);
+      if (pwd) {
+        rec.salt = K.b64uRnd(16);
+        chain = K.exportKey(cek).then(function (raw) {
+          setProgress(pendP, '正在派生密钥（防暴力破解，约需 1 秒）…');
+          // 优先在 Worker 内完成 25 万次 PBKDF2，主线程不卡顿；不支持时自动降级
+          return K.wrapCEKAsync(raw, pwd, rec.salt, K.PBKDF2_ITER).catch(function () {
+            return K.deriveKEK(pwd, rec.salt).then(function (kek) {
+              return K.wrapCEK(cek, kek);
+            });
+          });
+        }).then(function (w) {
+          rec.wrapIv = w.iv; rec.wrapped = w.wrapped; delete rec.k; return cek;
+        });
+      }
+      return chain.then(function () {
+        return K.encryptBlob(item.file, cek, function (p) {
+          setProgress((idx + p) / total, '正在加密 ' + item.name + ' ' + Math.round(p * 100) + '%');
+        });
+      }).then(function (cipher) {
+        rec.cipher = cipher;
+        return K.encryptJson({ name: item.name, type: item.type, size: item.size }, cek);
+      }).then(function (m) {
+        rec.metaIv = m.iv; rec.metaCt = m.ct;
+        return DB.put(rec);
+      }).then(function () { return rec; });
+    });
+  }
+
+  var rafId = null, pendP = 0, pendT = '';
+  function setProgress(p, text) {
+    pendP = p; if (text) pendT = text;
+    if (rafId) return;
+    rafId = (window.requestAnimationFrame || function (f) { return setTimeout(f, 16); })(function () {
+      rafId = null;
+      var v = Math.max(0, Math.min(1, pendP));
+      $('#progressBar').style.transform = 'scaleX(' + v + ')';
+      if (pendT) { $('#progressText').textContent = pendT; pendT = ''; }
+    });
+  }
+
+  function showResultCard(rec) {
+    var url = shareLink(rec);
+    var card = document.createElement('section');
+    card.className = 'card result-card';
+    card.innerHTML =
+      '<div class="card-head"><h3>🎉 加密完成</h3></div>' +
+      '<div class="share-head"><div class="ficon">' + iconOf(rec.type, rec.name) + '</div>' +
+      '<div class="fmeta"><h2 class="rname"></h2><p class="hint">' + sizeStr(rec.size) +
+      (rec.hasPassword ? ' · 密码保护' : '') + (rec.expireAt ? ' · ' + leftStr(rec.expireAt - Date.now()) : ' · 长期有效') + '</p></div></div>' +
+      '<input type="text" class="rurl" readonly style="margin-top:12px">' +
+      '<button class="btn btn-primary btn-block rcopy">复制链接</button>' +
+      '<button class="btn btn-ghost btn-block ropen">立即打开</button>' +
+      '<button class="btn btn-ghost btn-block rpack">导出分享包（发给别人用）</button>' +
+      '<p class="hint">本工具不上传服务器，加密数据只在本机。要让<b>别人</b>打开，需把分享包一起发给他，他在首页导入后再点链接即可。</p>';
+    card.querySelector('.rname').textContent = rec.name;
+    card.querySelector('.rurl').value = url;
+    card.querySelector('.rcopy').onclick = function () { copy(url); };
+    card.querySelector('.ropen').onclick = function () { location.href = url; location.reload(); };
+    card.querySelector('.rpack').onclick = function () { exportPack(rec); };
+    var lib = $('#libCard');
+    lib.parentNode.insertBefore(card, lib);
+    setTimeout(function () { if (card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+    if (document.querySelectorAll('.result-card').length === 1) copy(url);
+  }
+
+  /* ================= 我的文件 ================= */
+  function renderLib() {
+    DB.all().then(function (list) {
+      list.sort(function (a, b) { return b.createdAt - a.createdAt; });
+      $('#libCard').hidden = list.length === 0;
+      $('#libCount').textContent = list.length;
+      var ul = $('#libList'); ul.innerHTML = '';
+      var frag = document.createDocumentFragment();
+      list.forEach(function (rec) {
+        var left = rec.expireAt ? rec.expireAt - Date.now() : Infinity;
+        var dead = left <= 0;
+        var li = document.createElement('li');
+        li.innerHTML =
+          '<div class="licon">' + iconOf(rec.type, rec.name) + '</div>' +
+          '<div class="linfo"><div class="lname"></div>' +
+          '<div class="lsub">' + sizeStr(rec.size) + ' · ' +
+          (rec.expireAt ? '<span class="' + (dead ? 'dead' : (left < 86400000 ? 'warn' : '')) + '">' + leftStr(left) + '</span>' : '长期有效') +
+          (rec.hasPassword ? ' · 🔐' : '') + (rec.type.indexOf('video/') === 0 && !rec.allowDownload ? ' · 禁下载' : '') +
+          '</div><div class="lacts">' +
+          '<button class="mini a-link">复制链接</button>' +
+          '<button class="mini a-open">打开</button>' +
+          '<button class="mini a-pack">分享包</button>' +
+          '<button class="mini del a-del">删除</button></div></div>';
+        li.querySelector('.lname').textContent = rec.name;
+        li.querySelector('.a-link').onclick = function () { copy(shareLink(rec)); };
+        li.querySelector('.a-open').onclick = function () { location.href = shareLink(rec); location.reload(); };
+        li.querySelector('.a-pack').onclick = function () { exportPack(rec); };
+        li.querySelector('.a-del').onclick = function () {
+          DB.del(rec.id).then(renderLib).then(function () { toast('已删除'); });
+        };
+        frag.appendChild(li);
+      });
+      ul.appendChild(frag);
+    });
+  }
+
+  function cleanExpired(silent) {
+    DB.all().then(function (list) {
+      var now = Date.now(), n = 0, jobs = [];
+      list.forEach(function (r) { if (r.expireAt && r.expireAt <= now) { jobs.push(DB.del(r.id)); n++; } });
+      return Promise.all(jobs).then(function () {
+        if (n && !silent) { toast('已销毁 ' + n + ' 个过期文件'); renderLib(); }
+        else if (!silent) toast('没有过期文件');
+      });
+    });
+  }
+
+  /* ================= 分享包 导出 / 导入 ================= */
+  function exportPack(rec) {
+    var meta = {
+      v: K.PACK_VER, id: rec.id, name: rec.name, type: rec.type, size: rec.size,
+      createdAt: rec.createdAt, expireAt: rec.expireAt, allowDownload: rec.allowDownload,
+      hasPassword: rec.hasPassword, k: rec.k || null,
+      salt: rec.salt || null, wrapIv: rec.wrapIv || null, wrapped: rec.wrapped || null,
+      metaIv: rec.metaIv, metaCt: rec.metaCt,
+      wm: rec.wm || null,
+      cipherSize: rec.cipher.size,
+      signedAt: Date.now()
+    };
+    var metaStr = JSON.stringify(meta);
+    if (rec.k) {
+      return K.signPayload(rec.k, metaStr, rec.cipher.size)
+        .then(function (sig) { return buildPack(meta, metaStr, sig, rec); });
+    }
+    // 带密码：密钥已被口令包裹，需先输密码取出内容密钥才能签名
+    promptPackPassword(
+      '为分享包签名',
+      '该文件的密钥由密码保护。请输入密码以生成<b>防篡改签名</b>，对方导入时也需输入同一密码校验。',
+      function (pwd) {
+        return K.unwrapCEKAsync(rec.wrapped, rec.wrapIv, pwd, rec.salt, K.PBKDF2_ITER)
+          .then(function (raw) { return K.importCEK(raw); })
+          .catch(function () {
+            return K.deriveKEK(pwd, rec.salt).then(function (kek) {
+              return K.unwrapCEK(rec.wrapped, rec.wrapIv, kek);
+            });
+          })
+          .then(function (cek) { return K.exportKey(cek); });
+      },
+      function (rawKey) {
+        return K.signPayload(rawKey, metaStr, rec.cipher.size)
+          .then(function (sig) { return buildPack(meta, metaStr, sig, rec); });
+      }
+    );
+  }
+
+  function buildPack(meta, metaStr, sig, rec) {
+    var magic = new TextEncoder().encode(K.PACK_MAGIC);
+    var ver = new Uint8Array([K.PACK_VER]);
+    var sigBytes = new TextEncoder().encode(sig || '');
+    var metaBytes = new TextEncoder().encode(metaStr);
+    var head = new Uint8Array(4 + 1 + 4 + 4);
+    head.set(magic, 0); head.set(ver, 4);
+    new DataView(head.buffer).setUint32(5, metaBytes.length, false);
+    new DataView(head.buffer).setUint32(9, sigBytes.length, false);
+    var pack = new Blob([head, metaBytes, sigBytes, rec.cipher], { type: 'application/octet-stream' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(pack);
+    a.download = rec.name.replace(/[\\/:*?"<>|]/g, '_') + '.kobepack';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    toast(rec.hasPassword
+      ? '分享包已导出（已签名）。对方导入时需输入密码校验'
+      : '分享包已导出（已签名防篡改），对方在首页导入后即可打开链接', 3600);
+  }
+
+  function importPack(file) {
+    var fr = new FileReader();
+    fr.onload = function () {
+      var pending = null;
+      try {
+        var buf = fr.result;
+        var dv = new DataView(buf);
+        var magic = new TextDecoder().decode(new Uint8Array(buf, 0, 4));
+        if (magic !== K.PACK_MAGIC) throw new Error('不是有效的科比云盘分享包');
+        var ver = new Uint8Array(buf, 4, 1)[0];
+        var metaLen = dv.getUint32(5, false);
+        var sigLen = dv.getUint32(9, false);
+        if (metaLen <= 0 || metaLen > 20 * 1024 * 1024) throw new Error('分享包已损坏');
+        var metaStr = new TextDecoder().decode(new Uint8Array(buf, 13, metaLen));
+        var sig = new TextDecoder().decode(new Uint8Array(buf, 13 + metaLen, sigLen));
+        var cipher = new Blob([new Uint8Array(buf, 13 + metaLen + sigLen)]);
+        var json = JSON.parse(metaStr);
+        if (!json.id || !json.metaCt) throw new Error('分享包内容不完整');
+        json.cipher = cipher;
+        pending = { json: json, metaStr: metaStr, sig: sig };
+      } catch (e) { toast('分享包解析失败：' + e.message, 3500); return; }
+
+      // 密文长度必须与签名时记录的一致，防止被整段替换
+      if (pending.json.cipherSize != null && pending.json.cipherSize !== pending.json.cipher.size) {
+        return toast('安全校验失败：密文大小与记录不符，分享包可能已被篡改', 4500);
+      }
+
+      if (pending.json.k) {
+        // 明文密钥：立即验签
+        K.verifyPayload(pending.json.k, pending.metaStr, pending.json.cipher.size, pending.sig)
+          .then(function (ok) {
+            if (!ok) return toast('安全校验失败：签名不匹配，分享包已被修改，已拒绝导入', 4800);
+            finishImport(pending.json);
+          }).catch(function () {
+            toast('安全校验失败，已拒绝导入', 4000);
+          });
+      } else {
+        // 带密码：先验证密码，通过后再验签
+        askPackPassword(pending);
+      }
+    };
+    fr.readAsArrayBuffer(file);
+  }
+
+  function finishImport(json) {
+    DB.put(json).then(function () {
+      toast('导入成功 · 完整性校验通过');
+      renderLib();
+      location.href = shareLink(json);
+      location.reload();
+    }).catch(function () { toast('导入失败：本地存储不可用'); });
+  }
+
+  // 通用密码弹窗：unlockFn 取出内容密钥，thenFn 拿到密钥后继续
+  function promptPackPassword(title, desc, unlockFn, thenFn, okLabel) {
+    openModal(title,
+      '<p class="hint">' + desc + '</p>' +
+      '<input type="password" id="packPwd" placeholder="密码" style="margin-top:12px">' +
+      '<button class="btn btn-primary btn-block" id="packOkBtn">' + (okLabel || '确定') + '</button>' +
+      '<p class="err" id="packErr" hidden></p>');
+    var btn = $('#packOkBtn'), inp = $('#packPwd'), err = $('#packErr');
+    inp.focus();
+    var run = function () {
+      var pwd = inp.value;
+      if (!pwd) { err.textContent = '请输入密码'; err.hidden = false; return; }
+      err.hidden = true; btn.disabled = true; btn.textContent = '处理中…';
+      unlockFn(pwd).then(thenFn).catch(function (e) {
+        btn.disabled = false; btn.textContent = okLabel || '确定';
+        err.textContent = (e && e.message === 'tampered')
+          ? '签名不匹配，分享包已被修改，已拒绝导入'
+          : '密码错误，无法处理';
+        err.hidden = false;
+      });
+    };
+    btn.onclick = run;
+    inp.onkeydown = function (e) { if (e.key === 'Enter') run(); };
+  }
+
+  // 带密码分享包的导入校验：密码正确 + 签名匹配 才允许入库
+  function askPackPassword(pending) {
+    promptPackPassword(
+      '验证分享包',
+      '该分享包设有密码，请输入密码完成<b>完整性校验</b>后导入。<br>密码错误或文件被篡改都会被拒绝。',
+      function (pwd) {
+        return K.unwrapCEKAsync(pending.json.wrapped, pending.json.wrapIv, pwd, pending.json.salt, K.PBKDF2_ITER)
+          .then(function (raw) { return K.importCEK(raw); })
+          .catch(function () {
+            return K.deriveKEK(pwd, pending.json.salt).then(function (kek) {
+              return K.unwrapCEK(pending.json.wrapped, pending.json.wrapIv, kek);
+            });
+          })
+          .then(function (cek) { return K.exportKey(cek); });
+      },
+      function (rawKey) {
+        return K.verifyPayload(rawKey, pending.metaStr, pending.json.cipher.size, pending.sig)
+          .then(function (ok) {
+            if (!ok) { var e = new Error(''); e.message = 'tampered'; throw e; }
+            pending.json.k = rawKey;    // 校验通过，本地保存已解锁的密钥
+            return finishImport(pending.json);
+          });
+      },
+      '校验并导入'
+    );
+  }
+
+  /* ================= 分享页 ================= */
+  var cur = null;
+  function initShare(route) {
+    $('#viewHome').hidden = true; $('#viewShare').hidden = false;
+    DB.get(route.id).then(function (rec) {
+      if (!rec) return dead('文件不在本设备', '该链接对应的加密数据不在这台设备上。请让分享者导出 .kobepack 分享包，在首页导入后再打开。');
+      if (rec.expireAt && rec.expireAt <= Date.now()) {
+        DB.del(rec.id).then(function () { try { renderLib(); } catch (e) {} });
+        return dead('链接已过期', '该文件已于 ' + new Date(rec.expireAt).toLocaleString('zh-CN') + ' 到期，密文已自动销毁，无法恢复。');
+      }
+      cur = rec;
+      if (rec.hasPassword && !rec.k) {
+        $('#gateBox').hidden = false;
+        $('#gateTip').textContent = '「' + rec.name + '」已设置密码，请输入密码解密';
+        $('#gateBtn').onclick = function () { openWithPassword($('#gatePwd').value); };
+        $('#gatePwd').onkeydown = function (e) { if (e.key === 'Enter') $('#gateBtn').click(); };
+        $('#gatePwd').focus();
+        return;
+      }
+      var key = rec.k || route.k;
+      if (!key) return dead('缺少密钥', '链接不完整（缺少 #k= 密钥片段），请向分享者重新获取完整链接。');
+      return K.importCEK(key).then(function (cek) { return renderShare(rec, cek); });
+    }).catch(function (e) {
+      console.error(e);
+      dead('打开失败', e.message || '未知错误');
+    });
+  }
+
+  function openWithPassword(pwd) {
+    if (!pwd) { $('#gateErr').textContent = '请输入密码'; $('#gateErr').hidden = false; return; }
+    $('#gateErr').hidden = true;
+    $('#gateBtn').textContent = '解密中…'; $('#gateBtn').disabled = true;
+    K.unwrapCEKAsync(cur.wrapped, cur.wrapIv, pwd, cur.salt, K.PBKDF2_ITER)
+      .then(function (raw) { return K.importCEK(raw); })   // Worker 返回的是密钥原文，需导入成 CryptoKey
+      .catch(function () {
+        return K.deriveKEK(pwd, cur.salt).then(function (kek) {
+          return K.unwrapCEK(cur.wrapped, cur.wrapIv, kek);
+        });
+      })
+      .then(function (cek) {
+      $('#gateBox').hidden = true; $('#gateBtn').textContent = '解密并打开'; $('#gateBtn').disabled = false;
+      return renderShare(cur, cek);
+    }).catch(function () {
+      $('#gateBtn').textContent = '解密并打开'; $('#gateBtn').disabled = false;
+      $('#gateErr').textContent = '密码错误，无法解密'; $('#gateErr').hidden = false;
+    });
+  }
+
+  function guessMime(rec) {
+    var t = rec.type;
+    if (t && t !== 'application/octet-stream') return t;
+    var ext = (rec.name || '').split('.').pop().toLowerCase();
+    var map = {
+      mp4: 'video/mp4', m4v: 'video/mp4', webm: 'video/webm', ogv: 'video/ogg',
+      mov: 'video/quicktime', mkv: 'video/x-matroska', avi: 'video/x-msvideo',
+      jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
+      webp: 'image/webp', bmp: 'image/bmp', avif: 'image/avif', heic: 'image/heic',
+      mp3: 'audio/mpeg', wav: 'audio/wav', m4a: 'audio/mp4', ogg: 'audio/ogg',
+      pdf: 'application/pdf', txt: 'text/plain', json: 'application/json'
+    };
+    return map[ext] || t || 'application/octet-stream';
+  }
+
+  var expTimer = null;
+  function stopExpire() { if (expTimer) { clearInterval(expTimer); expTimer = null; } }
+  function watchExpire(rec) {
+    stopExpire();
+    if (!rec.expireAt) return;
+    var el = $('#shareExpire');
+    function tick() {
+      var left = rec.expireAt - Date.now();
+      if (left <= 0) { expireNow(rec); return; }
+      el.innerHTML = '链接有效期至 <b>' + new Date(rec.expireAt).toLocaleString('zh-CN') +
+        '</b>（' + leftStr(left) + '，到期自动销毁）';
+    }
+    tick();
+    expTimer = setInterval(tick, 1000);
+  }
+  function expireNow(rec) {
+    stopExpire(); stopWatermark();
+    var v = $('#videoView'); if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
+    var im = $('#imgView'); if (im) im.removeAttribute('src');
+    var nm = rec.name, ea = rec.expireAt;
+    DB.del(rec.id).then(function () { try { renderLib(); } catch (e) {} });
+    dead('链接已过期', '「' + nm + '」已于 ' + new Date(ea).toLocaleString('zh-CN') +
+      ' 到期，播放已停止，本地密文已销毁。');
+  }
+
+  function renderShare(rec, cek) {
+    $('#shareBox').hidden = false;
+    $('#shareIcon').textContent = iconOf(rec.type, rec.name);
+    $('#shareName').textContent = rec.name;
+    var baseInfo = sizeStr(rec.size) + ' · ' + (rec.type || '未知类型') + (rec.hasPassword ? ' · 密码保护' : '');
+    $('#shareInfo').textContent = baseInfo;
+    setProgress2 = function (t) { $('#shareInfo').textContent = t ? baseInfo + ' · ' + t : baseInfo; };
+    $('#shareExpire').innerHTML = rec.expireAt
+      ? '链接有效期至 <b>' + new Date(rec.expireAt).toLocaleString('zh-CN') + '</b>（' + leftStr(rec.expireAt - Date.now()) + '，到期自动销毁）'
+      : '长期有效';
+
+    setProgress2('正在解密…');
+    var lastPct = -1;
+    K.decryptBlob(rec.cipher, cek, function (p) {
+      var pct = Math.round(p * 100);
+      if (pct === lastPct || pct % 5 !== 0 && pct !== 100) return;  // 每 5% 才刷新一次 UI
+      lastPct = pct;
+      setProgress2('正在解密… ' + pct + '%');
+    }, guessMime(rec)).then(function (plain) {
+      setProgress2('');
+      var url = URL.createObjectURL(plain);
+      var isImg = rec.type.indexOf('image/') === 0 || /\.(jpg|jpeg|png|gif|webp|bmp|avif|heic)$/i.test(rec.name);
+      var isVid = rec.type.indexOf('video/') === 0 || /\.(mp4|webm|mov|m4v|mkv|avi)$/i.test(rec.name);
+      var canDl = rec.allowDownload !== false;
+
+      $('#imgView').hidden = !isImg;
+      $('#videoView').hidden = !isVid;
+      $('#noPreview').hidden = (isImg || isVid);
+      $('#playerWrap').classList.toggle('empty', !(isImg || isVid));
+      $('#npIcon').textContent = iconOf(rec.type, rec.name);
+
+      if (isImg) { $('#imgView').src = url; }
+      if (isVid) {
+        var v = $('#videoView');
+        // controlslist 必须在设置 src 之前生效
+        if (canDl) v.removeAttribute('controlslist');
+        else v.setAttribute('controlslist', 'nodownload noremoteplayback');
+        v.disablePictureInPicture = !canDl;   // 必须设 property，setAttribute 无效
+        v.setAttribute('playsinline', '');
+        v.playsInline = true;                 // iOS 防止强制全屏
+        v.preload = 'metadata';
+        v.src = url;
+        if (!canDl) {
+          applyWatermark(rec.wm || null);
+          startWatermark();
+          applyAntiDownload();
+        }
+      }
+
+      var dl = $('#dlBtn');
+      if (canDl) {
+        dl.hidden = false; $('#dlTip').hidden = true;
+        dl.onclick = function () {
+          var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+          if (isIOS) toast('iOS 不支持直接下载，请长按图片/视频保存', 3600);
+          var a = document.createElement('a');
+          a.href = url; a.download = rec.name; a.target = '_blank'; a.rel = 'noopener';
+          document.body.appendChild(a); a.click(); a.remove();
+        };
+      } else {
+        dl.hidden = true; $('#dlTip').hidden = false;
+      }
+      $('#packBtn').onclick = function () { exportPack(rec); };
+      watchExpire(rec);
+    }).catch(function (e) {
+      setProgress2('');
+      dead('解密失败', '密钥不匹配或数据已损坏：' + e.message);
+    });
+  }
+
+  var setProgress2 = function () {};
+
+  var antiInstalled = false, wmTimer = null;
+  function applyAntiDownload() {
+    var wrap = $('#playerWrap');
+    if (antiInstalled) return;
+    antiInstalled = true;
+    wrap.addEventListener('contextmenu', function (e) { e.preventDefault(); return false; });
+    wrap.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    document.addEventListener('keydown', function (e) {
+      if (!cur || cur.allowDownload !== false) return;   // 只在禁下载时生效
+      var k = (e.key || '').toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u' || k === 'p')) {
+        e.preventDefault(); toast('该文件已关闭下载权限');
+      }
+    });
+    document.addEventListener('contextmenu', function (e) {
+      if (!cur || cur.allowDownload !== false) return;
+      if (wrap.contains(e.target)) e.preventDefault();
+    });
+  }
+  function applyWatermark(cfg) {
+    var el = $('#watermark');
+    var pos = (cfg && cfg.pos) || 'br';
+    var color = (cfg && cfg.color) || '#FDB927';
+    var text = (cfg && cfg.text && cfg.text.trim()) ? cfg.text.trim() : '科比云盘 · 禁止下载';
+    el.className = 'watermark wm-' + pos;
+    el.style.color = color;
+    el.hidden = false;
+    el.dataset.text = text;
+  }
+  function startWatermark() {
+    stopWatermark();
+    var el = $('#watermark');
+    function tick() {
+      el.innerHTML = '<span>' + (el.dataset.text || '科比云盘 · 禁止下载') +
+        ' · ' + new Date().toLocaleTimeString('zh-CN') + '</span>';
+    }
+    tick();
+    wmTimer = setInterval(tick, 1000);
+  }
+  function stopWatermark() { if (wmTimer) { clearInterval(wmTimer); wmTimer = null; } }
+
+  function dead(title, tip) {
+    $('#shareBox').hidden = true; $('#gateBox').hidden = true;
+    $('#deadBox').hidden = false;
+    $('#deadTitle').textContent = title;
+    $('#deadTip').textContent = tip;
+  }
+
+  /* ================= 版本与更新日志 ================= */
+  var VERSION = '1.2.0';
+  var CHANGELOG = [
+    {
+      v: '1.2.0', d: '2026-10-13', t: '水印自定义 · 分享包防篡改',
+      items: [
+        '<b>下载开关状态一眼可辨</b>：滑块上直接显示「开 / 关」，整块配色随状态变化（开启金色、关闭红色），并写明当前是"对方可下载"还是"仅可在线观看"',
+        '<b>水印可自定义</b>：支持左上 / 右上 / 居中 / 左下 / 右下 五个位置，7 种颜色，文字可自行修改，设置时实时预览效果',
+        '<b>分享包防篡改</b>：导出时用内容密钥派生的签名密钥对元数据做 HMAC-SHA256 签名，任何修改（改到期时间、改下载权限、替换文件）都会被检测并拒绝导入',
+        '导入带密码的分享包时，需先输入密码完成完整性校验，密码错误或文件被篡改都会被拒绝',
+        '分享包格式升级到 v3，并校验密文大小是否与签名记录一致'
+      ]
+    },
+    {
+      v: '1.1.0', d: '2026-10-13', t: '流畅性大幅优化',
+      items: [
+        '<b>修复整页点不动的严重问题</b>：遮罩层样式覆盖了 hidden 属性，一进页面就有透明层挡住所有按钮',
+        '<b>口令派生移入后台线程</b>：25 万次 PBKDF2 不再阻塞界面，输入密码时不再假死',
+        '<b>去掉大面积毛玻璃效果</b>：卡片与顶栏改用实色渲染，滚动帧率显著提升',
+        '<b>大文件内存占用降低</b>：加密中间结果交给浏览器换页存储，手机处理大视频不再容易闪退',
+        '<b>进度条改用合成层动画</b>并做节流，上传时界面不再一卡一卡',
+        '列表渲染改为批量插入，文件多时不再掉帧',
+        '新增更新日志入口与版本号显示'
+      ]
+    },
+    {
+      v: '1.0.1', d: '2026-10-13', t: '稳定性修复',
+      items: [
+        '修复视频在线看不了：解密结果缺少类型标记，浏览器无法识别播放',
+        '修复禁止下载后视频无法播放、进度条拖不动：防护层挡住了播放器控件',
+        '修复选中 365 天却显示长期有效，与「最高 365 天」说明矛盾',
+        '修复到期时间可以填过去时间，生成的链接立刻失效',
+        '修复一次上传多个文件时拿不到链接，只有单文件才出卡片',
+        '修复多批上传时结果卡片堆积，分不清哪条是新的',
+        '修复上传中可重复点击导致重复加密',
+        '修复下载开关只在上传视频时出现，但实际对所有文件生效',
+        '修复页面开着放到期也不会失效，补上到期自动停播并销毁密文',
+        '修复返回首页后仍拦截保存快捷键',
+        '修复 iOS 点击下载没有任何反应',
+        '新增超大文件（2GB 以上）自动跳过并提示',
+        '新增微信 / QQ 打不开的排查说明'
+      ]
+    },
+    {
+      v: '1.0.0', d: '2026-10-13', t: '首个版本',
+      items: [
+        'AES-256-GCM 分块加密照片、视频与任意格式文件',
+        '生成分享链接，# 片段携带密钥、不上传服务器',
+        '设置访问密码（PBKDF2-SHA512，25 万次迭代）',
+        '设置到期时间，最高 365 天，到期自动销毁',
+        '视频在线播放，可单独关闭下载权限并叠加动态水印',
+        '导出 .kobepack 分享包，换设备导入后即可打开'
+      ]
+    }
+  ];
+  function changelogHTML() {
+    return CHANGELOG.map(function (c, i) {
+      return '<div class="log"><div class="log-h">' +
+        '<span class="log-v">v' + c.v + '</span>' +
+        '<span class="log-d">' + c.d + '</span>' +
+        (i === 0 ? '<span class="log-new">最新</span>' : '') +
+        '</div><div class="hint" style="margin:0 0 6px">' + c.t + '</div>' +
+        '<ul>' + c.items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+    }).join('');
+  }
+
+  /* ================= 三点菜单 & 弹窗 ================= */
+  var FAQ = [
+    {
+      q: '问题一：链接有效期最高是多少？',
+      a: '最高 <b>365 天</b>。可选 1 小时 / 6 小时 / 24 小时 / 7 天（默认）/ 30 天 / 365 天，也支持自定义到某一时刻，但不超过 365 天。' +
+        '到期后密文与本地记录会被自动销毁，链接立刻失效且无法恢复——这是"阅后即焚"式的时效性设计，不是隐藏式失效。'
+    },
+    {
+      q: '问题二：照片、视频、文件用的是什么加密技术？',
+      a: '统一采用 <b>AES-256-GCM</b>（带认证的对称加密，可同时防窃听与防篡改）加密文件本体，' +
+        '文件名与类型等元数据同样加密；设置密码时用 <b>PBKDF2-HMAC-SHA512</b>（25 万次迭代 + 16 字节随机盐）把口令派生为密钥，再用来包裹内容密钥。' +
+        '全部基于浏览器原生 <b>Web Crypto API</b>，随机数来自 crypto.getRandomValues。密钥不存储明文，也不发送。'
+    },
+    {
+      q: '密钥放在哪里？为什么链接里有一段 #？',
+      a: '内容密钥（256 bit）放在链接的 <b># 片段</b>里（形如 #/s/文件ID?k=密钥）。' +
+        'URL 的 # 部分按 HTTP 规范不会发送到任何服务器，所以即便站点托管在公网，服务端也拿不到密钥。' +
+        '一旦设置密码，密钥不再出现在链接里，而是用口令派生密钥加密后留在本地——只有知道密码的人能解开。'
+    },
+    {
+      q: '我的文件被传到服务器了吗？',
+      a: '没有。这是一个纯前端站点，加密、存储全在你的浏览器里完成（IndexedDB 本地数据库），没有任何上传接口。' +
+        '因此换设备、换浏览器或清理缓存后，原链接在这台设备上就打不开了——此时请用"导出 .kobepack 分享包"，对方在首页导入即可观看。'
+    },
+    {
+      q: '可以禁止别人下载吗？能做到多严？',
+      a: '可以，生成链接前关闭"允许下载文件"即可（对照片、视频、文档同样生效）。之后会移除下载入口、屏蔽右键菜单、拖拽保存与 Ctrl+S 等快捷键，并在画面上叠加带时间戳的动态水印。' +
+        '链接到期时还会自动停止播放并销毁本地密文。需要说明的是：这是<b>浏览器层面的防护</b>，能挡住常规保存行为，但无法阻止专业抓包或录屏。' +
+        '要做到绝对不可下载，必须接入后端做签名分片（HLS + 短期 token）。'
+    },
+    {
+      q: '分享包能被别人篡改或破解吗？',
+      a: '分享包用<b>HMAC-SHA256 签名</b>保护：签名密钥由内容密钥派生，只有持有正确密钥的人才能生成。' +
+        '任何人修改里面的到期时间、下载权限、文件名或替换密文，导入时都会<b>签名校验失败并被拒绝</b>。' +
+        '文件本体每个分块还带 AES-GCM 认证标签，改动任何一个字节都会解密失败。' +
+        '需要说明的是：这能防篡改，但无法阻止对方把视频录屏下来——那属于终端侧行为，任何前端方案都拦不住。'
+    },
+    {
+      q: '水印能改位置和颜色吗？',
+      a: '可以。生成链接前关闭"允许下载文件"，下方会出现水印设置：' +
+        '<b>5 个位置</b>（左上 / 右上 / 居中 / 左下 / 右下）、<b>7 种颜色</b>（金 / 白 / 红 / 青 / 绿 / 紫 / 黑），文字也能自定义，设置时实时预览。' +
+        '水印带每秒刷新的时间戳，录屏时也会一并被录进去。'
+    },
+    {
+      q: '忘记密码怎么办？',
+      a: '<b>无法找回</b>。系统采用零知识设计：只保存密码派生出的密钥和随机盐，从不保存明文密码，我们也没有任何后门。' +
+        '密码丢失后只能请分享者重新上传并生成新链接。'
+    },
+    {
+      q: '单个文件有大小和格式限制吗？',
+      a: '格式不限，任意文件都能加密。大小上受浏览器内存与本地数据库配额限制，实测建议单文件不超过 <b>2GB</b>，手机端建议控制在 500MB 以内以获得流畅的加密体验。' +
+        '文件按 4MB 分块流式加密，不会一次性全部载入内存。'
+    },
+    {
+      q: '链接发到微信/QQ 打不开怎么办？',
+      a: '两个常见原因：一是微信内置浏览器对本地存储和加密接口支持不完整，<b>请点右上角「用浏览器打开」</b>（Safari / Chrome）；' +
+        '二是聊天软件可能截断链接，<b># 后面的密钥丢失</b>会导致无法解密，请让对方重新发送完整链接，或直接改用 .kobepack 分享包。'
+    },
+    {
+      q: '直接双击打开这个文件能用吗？',
+      a: '能用，但有限制：浏览器禁止 <code>file://</code> 页面使用本地数据库，程序会自动<b>降级存储</b>，此时单文件上限约 <b>4MB</b>，且链接只在当前浏览器有效。' +
+        '想解除限制、存大文件，请用本地服务器访问：在本文件所在目录执行 <code>python3 -m http.server 8000</code>，再打开 <code>http://localhost:8000</code>；' +
+        '或部署到 GitHub Pages / Vercel 等 HTTPS 环境。'
+    }
+  ];
+
+  function openModal(title, html) {
+    $('#modalTitle').textContent = title;
+    $('#modalBody').innerHTML = html;
+    $('#modalMask').hidden = false;
+    $$('#modalBody .faq-q').forEach(function (b) {
+      b.onclick = function () { b.parentNode.classList.toggle('open'); };
+    });
+  }
+  function faqHTML(list) {
+    return list.map(function (f) {
+      return '<div class="faq"><button class="faq-q"><span>' + f.q + '</span><i>+</i></button><div class="faq-a">' + f.a + '</div></div>';
+    }).join('');
+  }
+
+  function initMenu() {
+    $('#menuBtn').onclick = function () { $('#menuMask').hidden = false; };
+    $('#menuMask').onclick = function (e) { if (e.target === this) this.hidden = true; };
+    $$('#menuPanel button').forEach(function (b) {
+      b.onclick = function () {
+        $('#menuMask').hidden = true;
+        var act = b.dataset.act;
+        if (act === 'changelog') {
+          openModal('更新日志', changelogHTML() +
+            '<p class="hint" style="margin-top:4px">当前版本 v' + VERSION +
+            '。本工具为纯前端应用，刷新页面即自动更新到最新版。</p>');
+        }
+        if (act === 'about') {
+          openModal('关于科比云盘',
+            '<p class="hint" style="font-size:13px;line-height:1.8">科比云盘是一个<b>纯前端加密分享工具</b>：' +
+            '把照片、视频或任意文件在你的浏览器里完成 AES-256-GCM 加密，然后生成一条链接。' +
+            '打开链接即可在线观看视频、预览图片或下载文件；可设置访问密码、到期时间与是否允许下载。<br><br>' +
+            '它不是传统网盘——没有账号、没有服务器存储、没有空间配额，<b>文件永远不会离开你的设备</b>。' +
+            '链接里的 # 片段携带密钥，按 HTTP 规范不会上传到任何服务器。<br><br>' +
+            '<span style="color:var(--gold)">Mamba Mentality · 链接即文件</span></p>' +
+            '<div style="margin-top:14px">' + faqHTML(FAQ) + '</div>' +
+            '<p class="hint" style="margin-top:14px;text-align:center">当前版本 v' + VERSION + '</p>');
+        }
+        if (act === 'crypto') {
+          openModal('加密技术说明',
+            '<ul class="spec">' +
+            '<li>内容加密：AES-256-GCM<span>对称认证加密，4MB 分块流式处理，每块独立随机 IV，附带 128bit 认证标签</span></li>' +
+            '<li>口令派生：PBKDF2-HMAC-SHA512<span>250,000 次迭代，16 字节随机盐，防暴力破解</span></li>' +
+            '<li>密钥包裹：AES-256-GCM 包裹内容密钥<span>密码不落地，仅保存包裹后的密文</span></li>' +
+            '<li>随机数：crypto.getRandomValues<span>操作系统级 CSPRNG</span></li>' +
+            '<li>实现来源：Web Crypto API<span>浏览器原生实现，无第三方加密库</span></li>' +
+            '<li>密钥传输：URL # 片段<span>不参与 HTTP 请求，服务端不可见</span></li>' +
+            '<li>元数据处理：文件名 / 类型 / 大小一并加密<span>避免明文泄露隐私</span></li>' +
+            '<li>到期销毁：到期后删除本地密文记录<span>链接自然失效</span></li>' +
+            '</ul>');
+        }
+        if (act === 'faq') openModal('常见问题', faqHTML(FAQ));
+        if (act === 'wipe') {
+          if (confirm('确定清空本机所有加密文件与链接吗？此操作不可恢复。')) {
+            DB.wipe().then(function () { renderLib(); toast('已清空'); });
+          }
+        }
+      };
+    });
+    $('#footLogBtn').onclick = function () {
+      openModal('更新日志', changelogHTML());
+    };
+    $('#modalClose').onclick = function () { $('#modalMask').hidden = true; };
+    $('#modalMask').onclick = function (e) { if (e.target === this) this.hidden = true; };
+    $('#backBtn').onclick = goHome;
+    $('#deadBackBtn').onclick = goHome;
+  }
+  function goHome() {
+    stopExpire(); stopWatermark();
+    var v = $('#videoView'); if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
+    var im = $('#imgView'); if (im) im.removeAttribute('src');
+    cur = null;
+    location.replace(location.href.split('#')[0]);
+  }
+
+  /* ================= 启动 ================= */
+  window.addEventListener('hashchange', function () { location.reload(); });
+  document.addEventListener('DOMContentLoaded', function () {
+    initMenu();
+    if (!window.crypto || !crypto.subtle) {
+      toast('当前环境不支持 Web Crypto，请使用 HTTPS 或 localhost 访问', 6000);
+      return;
+    }
+    $('#menuVer').textContent = 'v' + VERSION;
+    $('#footVer').textContent = 'v' + VERSION;
+    var r = parseHash();
+    if (r) initShare(r); else initHome();
+  });
+})();
+
 </script>
 </body>
-  </html>
+</html>
